@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32616.157
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AirTableDatabase", "AirTableDatabase\AirTableDatabase.csproj", "{C741EE9C-E138-4CA6-90D9-476B8C4D2583}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AirTableIdentity", "AirTableIdentity\AirTableIdentity.csproj", "{22DEE8CC-EAC5-4390-8D6A-A5455CF244F7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AirTableWebApi", "AirTableWebApi\AirTableWebApi.csproj", "{DBD9A36F-458D-495E-9A08-428F57523B80}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Navmii.Request", "Navmii.Request\Navmii.Request.csproj", "{6D0990D3-E9CB-4794-A824-FA8B113402D1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Navmii.AirTableSyncNetcore6", "Navmii.AirTableSyncNetcore6\Navmii.AirTableSyncNetcore6.csproj", "{53FB4763-6B41-4E1C-AF03-1C4773080788}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C741EE9C-E138-4CA6-90D9-476B8C4D2583}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C741EE9C-E138-4CA6-90D9-476B8C4D2583}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C741EE9C-E138-4CA6-90D9-476B8C4D2583}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C741EE9C-E138-4CA6-90D9-476B8C4D2583}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22DEE8CC-EAC5-4390-8D6A-A5455CF244F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22DEE8CC-EAC5-4390-8D6A-A5455CF244F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22DEE8CC-EAC5-4390-8D6A-A5455CF244F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22DEE8CC-EAC5-4390-8D6A-A5455CF244F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DBD9A36F-458D-495E-9A08-428F57523B80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DBD9A36F-458D-495E-9A08-428F57523B80}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DBD9A36F-458D-495E-9A08-428F57523B80}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DBD9A36F-458D-495E-9A08-428F57523B80}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D0990D3-E9CB-4794-A824-FA8B113402D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D0990D3-E9CB-4794-A824-FA8B113402D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D0990D3-E9CB-4794-A824-FA8B113402D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D0990D3-E9CB-4794-A824-FA8B113402D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53FB4763-6B41-4E1C-AF03-1C4773080788}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53FB4763-6B41-4E1C-AF03-1C4773080788}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53FB4763-6B41-4E1C-AF03-1C4773080788}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53FB4763-6B41-4E1C-AF03-1C4773080788}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F10483A8-33DA-42DE-81B9-13985DCBE65A}
+	EndGlobalSection
+EndGlobal
