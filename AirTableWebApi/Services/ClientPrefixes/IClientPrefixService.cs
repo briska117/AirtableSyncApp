@@ -9,6 +9,5 @@ namespace AirTableWebApi.Services.ClientPrefixes
         public Task<ClientPrefix> AddClientPrefix(ClientPrefix clientPrefix);
         public Task<ClientPrefix> UpdateClientPrefix(ClientPrefix clientPrefix);
         public Task<bool> DeleteClientPrefix(string id);
-
     }
 }

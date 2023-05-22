@@ -7,6 +7,7 @@ using AirTableWebApi.Repositories.CollectionModes;
 using AirTableWebApi.Repositories.CountryPrefixes;
 using AirTableWebApi.Repositories.Projects;
 using AirTableWebApi.Repositories.RelatedTables;
+using AirTableWebApi.Repositories.UserProjects;
 using AirTableWebApi.Services.Account;
 using AirTableWebApi.Services.AirTableSync;
 using AirTableWebApi.Services.AsyncEvents;
@@ -17,6 +18,7 @@ using AirTableWebApi.Services.CountryPrefixes;
 using AirTableWebApi.Services.Initializations;
 using AirTableWebApi.Services.Projects;
 using AirTableWebApi.Services.RelatedTables;
+using AirTableWebApi.Services.UserProjects;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -43,6 +45,7 @@ builder.Services.AddTransient<ICountryPrefixRepository, CountryPrefixRepository>
 builder.Services.AddTransient<ICollectionModeRepository, CollectionModeRepository>();
 builder.Services.AddTransient<IAsyncEventsRepository, AsyncEventsRepository>();
 builder.Services.AddTransient<IRelatedTableRepository, RelatedTableRepository>();
+builder.Services.AddTransient<IUserProjectRepository, UserProjectRepository>();
 
 //Start Services
 builder.Services.AddTransient<IProjectsService, ProjectsService>();
@@ -54,6 +57,7 @@ builder.Services.AddTransient<IAsyncEventsService, AsyncEventsService>();
 builder.Services.AddTransient<IRelatedTablesService, RelatedTablesService>();
 builder.Services.AddTransient<IAuthService, AuthService>();
 builder.Services.AddTransient<IAirTableSyncService, AirTableSyncService>();
+builder.Services.AddTransient<IUserProjectService, UserProjectService>();
 
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));

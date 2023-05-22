@@ -85,7 +85,6 @@ namespace AirTableWebApi.Repositories.ClientPrefixes
             {
                 throw new Exception($"Error in update Client Prefix with Id {clientPrefix.ClientPrefixId} : {ex.Message}");
             }
-            
         }
     }
 }
