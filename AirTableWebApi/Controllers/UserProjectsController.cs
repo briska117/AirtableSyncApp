@@ -52,21 +52,26 @@ namespace AirTableWebApi.Controllers
         [Authorize(
             Policy = IdentitySettings.AdminRightsPolicyName,
             AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<ActionResult> AddUserProject([FromBody] UserProject userProject)
+        public async Task<ActionResult> AddUserProject([FromBody] UserProjectRequest userProject)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
-            await userProjectService.AddUserProject(userProject);
-            return Ok(userProject);
+            UserProject user = new UserProject
+            {
+                ProjectId = userProject.ProjectId,
+                UserId = userProject.UserId
+            };
+            await userProjectService.AddUserProject(user);
+            return Ok(user);
         }
 
         [HttpPut]
         [Authorize(
             Policy = IdentitySettings.AdminRightsPolicyName,
             AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<ActionResult> UpdateUserProject([FromBody] UserProject userProject)
+        public async Task<ActionResult> UpdateUserProject([FromBody] UserProjectRequest userProject)
         {
             if (!ModelState.IsValid)
             {
@@ -77,8 +82,14 @@ namespace AirTableWebApi.Controllers
             {
                 return NotFound();
             }
-            await userProjectService.UpdateUserProject(userProject);
-            return Ok(userProject);
+            UserProject user = new UserProject
+            {
+                UserProjectId = userProject.UserProjectId,
+                ProjectId = userProject.ProjectId,
+                UserId = userProject.UserId
+            };
+            await userProjectService.UpdateUserProject(user);
+            return Ok(user);
         }
 
         [HttpDelete("{id}")]
