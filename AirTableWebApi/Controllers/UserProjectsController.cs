@@ -1,6 +1,6 @@
 ﻿using AirTableDatabase.DBModels;
 using AirTableWebApi.Configurations;
-using AirTableWebApi.Services.ClientPrefixes;
+using AirTableWebApi.Services.UserProjects;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -10,94 +10,94 @@ namespace AirTableWebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ClientPrefixesController : ControllerBase
+    public class UserProjectsController : ControllerBase
     {
-        private readonly IClientPrefixService clientPrefixService;
+        private readonly IUserProjectService userProjectService;
 
-        public ClientPrefixesController(IClientPrefixService clientPrefixService)
+        public UserProjectsController(IUserProjectService userProjectService)
         {
-            this.clientPrefixService = clientPrefixService;
+            this.userProjectService = userProjectService;
         }
 
         [HttpGet]
         [Authorize(
             Policy = IdentitySettings.CustomerRightsPolicyName,
             AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<ActionResult> GetClientPrefixes()
+        public async Task<ActionResult> GetUserProjects()
         {
-            var clientPrefixes = await clientPrefixService.GetClientPrefixes(); 
-            return Ok(clientPrefixes);
+            var userProjects = await userProjectService.GetUserProjects();
+            return Ok(userProjects);
         }
 
         [HttpGet("{id}")]
         [Authorize(
             Policy = IdentitySettings.CustomerRightsPolicyName,
             AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<ActionResult> GetClientPrefix([FromRoute]string id)
+        public async Task<ActionResult> GetUserProject([FromRoute] string id)
         {
             if (string.IsNullOrEmpty(id))
             {
                 return BadRequest();
-            }  
-            var exist = await clientPrefixService.ExistClientPrefix(id);
+            }
+            var exist = await userProjectService.ExistUserProject(id);
             if (!exist)
             {
                 return NotFound();
             }
-            var clientId = await clientPrefixService.GetClientPrefix(id);
-            return Ok(clientId);
+            var userProjectId = await userProjectService.GetUserProject(id);
+            return Ok(userProjectId);
         }
 
         [HttpPost]
         [Authorize(
             Policy = IdentitySettings.AdminRightsPolicyName,
             AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<ActionResult> AddClientPrefix([FromBody] ClientPrefix clientPrefix)
+        public async Task<ActionResult> AddUserProject([FromBody] UserProject userProject)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest();    
+                return BadRequest();
             }
-            await clientPrefixService.AddClientPrefix(clientPrefix);
-            return Ok(clientPrefix);    
+            await userProjectService.AddUserProject(userProject);
+            return Ok(userProject);
         }
 
         [HttpPut]
         [Authorize(
             Policy = IdentitySettings.AdminRightsPolicyName,
             AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<ActionResult> UpdateClientPrefix([FromBody] ClientPrefix clientPrefix)
+        public async Task<ActionResult> UpdateUserProject([FromBody] UserProject userProject)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
-            var exist = await clientPrefixService.ExistClientPrefix(clientPrefix.ClientPrefixId);
+            var exist = await userProjectService.ExistUserProject(userProject.UserProjectId);
             if (!exist)
             {
                 return NotFound();
             }
-            await clientPrefixService.UpdateClientPrefix(clientPrefix);
-            return Ok(clientPrefix);
+            await userProjectService.UpdateUserProject(userProject);
+            return Ok(userProject);
         }
 
         [HttpDelete("{id}")]
         [Authorize(
             Policy = IdentitySettings.AdminRightsPolicyName,
             AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<ActionResult> DeleteClientPrefix([FromRoute] string id)
+        public async Task<ActionResult> DeleteUserProject([FromRoute] string id)
         {
             if (string.IsNullOrEmpty(id))
             {
                 return BadRequest();
             }
-            var exist = await clientPrefixService.ExistClientPrefix(id);
+            var exist = await userProjectService.ExistUserProject(id);
             if (!exist)
             {
                 return NotFound();
             }
-            var clientId = await clientPrefixService.DeleteClientPrefix(id);
-            return Ok(clientId);
+            var userProjectId = await userProjectService.DeleteUserProject(id);
+            return Ok(userProjectId);
         }
     }
 }
