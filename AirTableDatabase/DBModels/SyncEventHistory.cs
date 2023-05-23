@@ -16,13 +16,13 @@ namespace AirTableDatabase.DBModels
         [ForeignKey("SyncEvent")]
         [Required]
         public string SyncEventId { get; set; }
-        public DateTime StartAsync { get; set; }
+        public DateTime StartSync { get; set; }
 
         public DateTime FinishAsync { get; set; }
 
         public string Comment { get; set; } 
 
-        public StatusSync StatusAsync { get; set; } 
+        public StatusSync StatusSync { get; set; } 
 
         public virtual SyncEvent SyncEvent { get; set; }  
     }

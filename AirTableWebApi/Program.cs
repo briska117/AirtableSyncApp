@@ -1,7 +1,7 @@
 using AirTableDatabase;
 using AirTableIdentity;
 using AirTableWebApi.Configurations;
-using AirTableWebApi.Repositories.AsyncEvents;
+using AirTableWebApi.Repositories.SyncEvents;
 using AirTableWebApi.Repositories.ClientPrefixes;
 using AirTableWebApi.Repositories.CollectionModes;
 using AirTableWebApi.Repositories.CountryPrefixes;
@@ -41,7 +41,7 @@ builder.Services.AddTransient<IProjectsRepository, ProjectsRepository>();
 builder.Services.AddTransient<IClientPrefixRepository, ClientPrefixRepository>();
 builder.Services.AddTransient<ICountryPrefixRepository, CountryPrefixRepository>();
 builder.Services.AddTransient<ICollectionModeRepository, CollectionModeRepository>();
-builder.Services.AddTransient<IAsyncEventsRepository, AsyncEventsRepository>();
+builder.Services.AddTransient<ISyncEventsRepository, SyncEventsRepository>();
 builder.Services.AddTransient<IRelatedTableRepository, RelatedTableRepository>();
 
 //Start Services

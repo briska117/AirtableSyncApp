@@ -1534,7 +1534,15 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
                     || (ignoreLocalChanges && DbTools.GetModified(recordTeam) > lastModifiedTeam)
                     || (!activeIDs.Contains(idMain) && !DbTools.GetArchived(recordTeam)))
                 {
-                    update.Add(idMain, idTeam);
+                    bool containsKey = update.ContainsKey(idMain);
+                    if (containsKey)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        update.Add(idMain, idTeam);
+                    }
                 }
                 else
                 {

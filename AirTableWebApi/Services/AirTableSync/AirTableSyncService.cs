@@ -80,8 +80,8 @@ namespace AirTableWebApi.Services.AirTableSync
             {
                 SyncEventId = syncEvent.SyncEventId,
                 Comment = "Start Maual Airtable sync",
-                StatusAsync = StatusSync.Start,
-                StartAsync = dateManualSync
+                StatusSync = StatusSync.Start,
+                StartSync = dateManualSync
             };
             await this.eventsService.AddSyncEventHistory(history);
             Project project = await this.projectsService.GetProjectExtend(projectId);
