@@ -29,3 +29,5 @@
 /Navmii.SyncConsoleApp/bin/Debug/net6.0
 /Navmii.SyncConsoleApp/obj
 /packages
+/Navmii.Request/bin/Debug/net6.0/Navmii.Request.dll
+/Navmii.Request/bin/Debug/net6.0/Navmii.Request.pdb
