@@ -9,7 +9,6 @@ using AirTableWebApi.Services.Projects;
 using AirTableWebApi.Services.RelatedTables;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
 

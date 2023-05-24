@@ -1,10 +1,13 @@
 ﻿using AirTableDatabase.DBModels;
 using AirTableWebApi.Configurations;
+using AirTableWebApi.Services.Projects;
 using AirTableWebApi.Services.UserProjects;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 
 namespace AirTableWebApi.Controllers
 {
@@ -12,10 +15,12 @@ namespace AirTableWebApi.Controllers
     [ApiController]
     public class UserProjectsController : ControllerBase
     {
+        private readonly IProjectsService projectsService;
         private readonly IUserProjectService userProjectService;
 
-        public UserProjectsController(IUserProjectService userProjectService)
+        public UserProjectsController(IUserProjectService userProjectService, IProjectsService projectsService)
         {
+            this.projectsService = projectsService;
             this.userProjectService = userProjectService;
         }
 
@@ -46,6 +51,22 @@ namespace AirTableWebApi.Controllers
             }
             var userProjectId = await userProjectService.GetUserProject(id);
             return Ok(userProjectId);
+        }
+
+        [HttpGet("GetProjectsFromUser/{id}")]
+        [Authorize(
+            Policy = IdentitySettings.CustomerRightsPolicyName,
+            AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult> GetProjectsFromUser([FromRoute] string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return BadRequest();
+            }
+            List<String> arrayProjectsFromUser = new List<String>();
+            List<UserProject> userProjects = await this.userProjectService.GetUserProjects();
+            arrayProjectsFromUser = userProjects.Where(up => up.UserId == id).Select(p => p.ProjectAsync.Name).ToList();
+            return Ok(arrayProjectsFromUser);
         }
 
         [HttpPost]

@@ -46,7 +46,7 @@ namespace AirTableWebApi.Repositories.UserProjects
         {
             try
             {
-                List<UserProject> userProjects = await this.applicationDB.UserProjects.ToListAsync();
+                List<UserProject> userProjects = await this.applicationDB.UserProjects.Include(p => p.ProjectAsync).ToListAsync();
                 return userProjects;
             }
             catch (Exception ex)
