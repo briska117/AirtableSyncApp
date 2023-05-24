@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using AutoMapper;
 
 namespace AirTableWebApi.Controllers
 {
@@ -24,6 +25,7 @@ namespace AirTableWebApi.Controllers
         private readonly IRelatedTablesService relatedTablesService;
         private readonly IClientPrefixService clientPrefixesService;
         private readonly ICountryPrefixService countryPrefixesService;
+        private readonly IMapper mapper;
 
         public ProjectsController(
             IProjectsService projectsService,
@@ -31,7 +33,8 @@ namespace AirTableWebApi.Controllers
             ICollectionModeService collectionMode,
             IRelatedTablesService relatedTablesService,
             IClientPrefixService clientPrefixesService,
-            ICountryPrefixService countryPrefixesService
+            ICountryPrefixService countryPrefixesService,
+            IMapper mapper
             )
         {
             this.projectsService = projectsService;
@@ -40,6 +43,7 @@ namespace AirTableWebApi.Controllers
             this.relatedTablesService = relatedTablesService;
             this.clientPrefixesService = clientPrefixesService;
             this.countryPrefixesService = countryPrefixesService;
+            this.mapper = mapper;
         }
 
         [HttpGet]
@@ -118,10 +122,11 @@ namespace AirTableWebApi.Controllers
             {
                 return BadRequest();
             }
-            await this.projectsService.AddProject(projectRequest.Project); 
+            Project project = this.mapper.Map<Project>(projectRequest.Project); 
+            await this.projectsService.AddProject(project); 
             foreach(SyncEvent asyncEvent in projectRequest.Events)
             {
-                asyncEvent.ProjectId = projectRequest.Project.ProjectId;
+                asyncEvent.ProjectId = project.ProjectId;
                 await this.asyncEventsService.AddAsyncEvent(asyncEvent);    
             }
             return Ok(projectRequest);
@@ -140,7 +145,8 @@ namespace AirTableWebApi.Controllers
             {
                 return NotFound($"Not found project with CountryPrefixId {projectRequest.Project.ProjectId}");
             }
-            await this.projectsService.UpdateProject(projectRequest.Project);
+            Project project = this.mapper.Map<Project>(projectRequest.Project);
+            await this.projectsService.UpdateProject(project);
             foreach (SyncEvent asyncEvent in projectRequest.Events)
             {
                 var exist = await this.asyncEventsService.GetAsyncEvent(asyncEvent.SyncEventId);
@@ -158,7 +164,6 @@ namespace AirTableWebApi.Controllers
 
             return Ok(projectRequest);
         }
-
         [HttpDelete("{projectId}")]
         [Authorize(
             Policy = IdentitySettings.AdminRightsPolicyName,

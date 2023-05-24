@@ -9,7 +9,7 @@ namespace AirTableDatabase
 {
     public class ProjectRequest
     {
-        public Project Project { get; set; }
+        public ProjectForm Project { get; set; }
         public List<SyncEvent> Events { get; set; }
     }
 }
