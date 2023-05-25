@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
+using System.Security.Claims;
 
 namespace AirTableWebApi.Controllers
 {
@@ -53,19 +54,21 @@ namespace AirTableWebApi.Controllers
             return Ok(userProjectId);
         }
 
-        [HttpGet("GetProjectsFromUser/{id}")]
+        [HttpGet("GetProjectsFromUser")]
         [Authorize(
             Policy = IdentitySettings.CustomerRightsPolicyName,
             AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<ActionResult> GetProjectsFromUser([FromRoute] string id)
+        public async Task<ActionResult> GetProjectsFromUser()
         {
-            if (string.IsNullOrEmpty(id))
+            var userclaims = User.Claims;
+            var idUser = userclaims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(idUser))
             {
                 return BadRequest();
             }
             List<String> arrayProjectsFromUser = new List<String>();
             List<UserProject> userProjects = await this.userProjectService.GetUserProjects();
-            arrayProjectsFromUser = userProjects.Where(up => up.UserId == id).Select(p => p.ProjectAsync.Name).ToList();
+            arrayProjectsFromUser = userProjects.Where(up => up.UserId == idUser).Select(p => p.ProjectAsync.Name).ToList();
             return Ok(arrayProjectsFromUser);
         }
 
