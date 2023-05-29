@@ -1,7 +1,7 @@
 ﻿using AirTableDatabase.DBModels;
 using AirTableWebApi.Configurations;
-using AirTableWebApi.Services.Projects;
 using AirTableWebApi.Services.UserProjects;
+using AirTableWebApi.Services.Projects;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Security.Claims;
+using AutoMapper;
+using AirTableDatabase;
+using Intuit.TSheets.Model;
 
 namespace AirTableWebApi.Controllers
 {
@@ -16,13 +19,15 @@ namespace AirTableWebApi.Controllers
     [ApiController]
     public class UserProjectsController : ControllerBase
     {
-        private readonly IProjectsService projectsService;
         private readonly IUserProjectService userProjectService;
+        private readonly IProjectsService projectsService;
+        private readonly IMapper mapper;
 
-        public UserProjectsController(IUserProjectService userProjectService, IProjectsService projectsService)
+        public UserProjectsController(IUserProjectService userProjectService, IMapper mapper, IProjectsService projectsService)
         {
-            this.projectsService = projectsService;
             this.userProjectService = userProjectService;
+            this.mapper = mapper;
+            this.projectsService = projectsService;
         }
 
         [HttpGet]
@@ -60,8 +65,8 @@ namespace AirTableWebApi.Controllers
             AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult> GetProjectsFromUser()
         {
-            var userclaims = User.Claims;
-            var idUser = userclaims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
+            var userClaims = User.Claims;
+            var idUser = userClaims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(idUser))
             {
                 return BadRequest();
@@ -89,6 +94,45 @@ namespace AirTableWebApi.Controllers
             };
             await userProjectService.AddUserProject(user);
             return Ok(user);
+        }
+
+        [HttpPost("AddOrUpdateUserProjects")]
+        [Authorize(
+            Policy = IdentitySettings.AdminRightsPolicyName,
+            AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult> AddOrUpdateUserProjects([FromBody] List<UserProjectRequest> userProjects)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+            //Add the news
+            //Check if exist
+            List<string> projectIds = userProjects.Select(up => up.ProjectId).ToList();
+            foreach(string projectId in projectIds)
+            {
+                if (! await this.projectsService.ProjectExist(projectId))
+                {
+                    return NotFound($"Not found project with id: {projectId}");
+                }
+            }
+            //The news
+            List<UserProjectRequest> addList = userProjects.Where(up => up.UserProjectId=="").ToList();
+            foreach(UserProjectRequest userProject in addList)
+            {
+                if(! await userProjectService.ExistUserProject(userProject.UserProjectId))
+                {
+                    UserProject project = this.mapper.Map<UserProject>(userProject);
+                    await this.userProjectService.AddUserProject(project);
+                    userProjects.Remove(userProject);
+                }
+            }
+            //Delete the missing
+            foreach(UserProjectRequest userProject in userProjects)
+            {
+                await this.userProjectService.DeleteUserProject(userProject.UserProjectId);
+            }
+            return Ok();
         }
 
         [HttpPut]

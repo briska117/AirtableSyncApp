@@ -9,6 +9,7 @@ namespace AirTableWebApi.AutoMapperProfile
         {
             // Source -> Target
             CreateMap<ProjectForm, Project>();
+            CreateMap<UserProjectRequest, UserProject>();
         }
     }
 }
