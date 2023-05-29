@@ -187,7 +187,7 @@ namespace AirTableDatabase.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("FinishAsync")
+                    b.Property<DateTime>("FinishSync")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("StartAsync")

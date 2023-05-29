@@ -28,7 +28,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 string? connectionString = builder.Configuration.GetConnectionString("AirTableConnection");
-builder.Services.AddDbContext<ApplicationDBContext>(options => options.UseNpgsql(connectionString),ServiceLifetime.Transient);
+builder.Services.AddDbContext<ApplicationDBContext>(options => options.UseNpgsql(connectionString),ServiceLifetime.Singleton);
 
 string? connectionIdentity = builder.Configuration.GetConnectionString("IdentityConnection");
 builder.Services.AddDbContext<IdentityContext>(options => options.UseNpgsql(connectionIdentity));

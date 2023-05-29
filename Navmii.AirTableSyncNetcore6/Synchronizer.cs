@@ -149,8 +149,9 @@ namespace Navmii.AirtableSync
             settings = syncSettings;
         }
 
-        public bool Execute()
+        public bool Execute(out StringBuilder logBuilder)
         {
+            logBuilder = new StringBuilder();
             // Connect to the central database
             
             mainBase = Connect(settings.MainDatabaseID);
@@ -159,15 +160,18 @@ namespace Navmii.AirtableSync
             if (mode == UtilityMode.None)
             {
                 Logger.Write("SYNC TOOL MODE NOT RECOGNIZED");
+                logBuilder.Append("SYNC TOOL MODE NOT RECOGNIZED \r\n");
                 return false;
             }
             else if (version != CurrentVersion)
             {
                 Logger.Write($"SYNC TOOL AND DB VERSIONS DIFFER:\r\nSync tool version - {CurrentVersion}\r\nDatabase version - {version}");
+                logBuilder.Append($"SYNC TOOL AND DB VERSIONS DIFFER:\r\nSync tool version - {CurrentVersion}\r\nDatabase version - {version}\r\n");
                 return false;
             }
 
             Logger.Write("######## START ########");
+            logBuilder.Append("######## START ########");
 
             // Create an empty ZIP archive for database backups
             backupZipPath = CreateBackupZipArchive();
@@ -176,6 +180,7 @@ namespace Navmii.AirtableSync
             // Read data from all the tables in the central DB
             dataMain = DbTools.ReadAllData(mainBase, GetTableListMain(mode));
             Logger.Write("Cached Central Database data in {0:#,##0} sec", (DateTime.UtcNow - start).TotalSeconds);
+            logBuilder.Append(String.Format("Cached Central Database data in {0:#,##0} sec", (DateTime.UtcNow - start).TotalSeconds));
 
             // Write all tables data into backup ZIP archive 
             //BackupData(string.Format("Central Database ({0})", mainDatabaseID), dataMain);
@@ -211,6 +216,7 @@ namespace Navmii.AirtableSync
             WriteModifiedTimes(settings.MainDatabaseID, modifiedMain);
 
             Logger.Write("######## END ########");
+            logBuilder.Append("######## END ########");
 
             return true;
         }
@@ -232,6 +238,7 @@ namespace Navmii.AirtableSync
                 }
                 catch(Exception ex) {
                     Logger.Write($"######## {ex.Message} ########");
+                    
                 }
             }
 

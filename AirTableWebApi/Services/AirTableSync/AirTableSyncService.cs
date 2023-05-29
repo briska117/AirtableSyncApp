@@ -3,6 +3,7 @@ using AirTableWebApi.Services.AsyncEvents;
 using AirTableWebApi.Services.Projects;
 using Navmii.AirtableSync;
 using Navmii.AirTableSyncNetcore6;
+using System.Text;
 
 namespace AirTableWebApi.Services.AirTableSync
 {
@@ -20,7 +21,7 @@ namespace AirTableWebApi.Services.AirTableSync
         private async void StartAirtableSyncProcces(Project project, string syncEventId)
         {
 
-            //var history = await this.eventsService.GetSyncEventHistory(syncEventId);
+            var history = await this.eventsService.GetSyncEventHistory(syncEventId);
             try
             {
                 string ProjectPrefix = $"{project.ClientPrefix.Name} - {project.CollectionMode.Name} - {project.CountryPrefix.Name},{project.ClientPrefix.Name} > {project.CollectionMode.Name} > {project.CountryPrefix.Name}";
@@ -36,31 +37,32 @@ namespace AirTableWebApi.Services.AirTableSync
                 };
                 using (Synchronizer sync = new Synchronizer(settings))
                 {
-                    //history.Comment = $"Airtable Sync InProccess {DateTime.UtcNow}";
-                    //history.StatusSync = StatusSync.InProccess;
-                    //await this.eventsService.UpdateSyncEventHistory(history);
-                    if (sync.Execute())
+                    StringBuilder logtread = new StringBuilder();
+
+                    history.Comment = $"Airtable Sync InProccess {DateTime.UtcNow}";
+                    history.StatusSync = StatusSync.InProccess;
+                    await this.eventsService.AddSyncEventHistory(history);
+                    if (sync.Execute(out logtread))
                     {
-                        //history.Comment= $"Airtable Sync Success {DateTime.UtcNow}";
-                        //history.StatusSync = StatusSync.Finish;
+                        history.Comment= Logger.ReadLogFile(); 
+                        history.StatusSync = StatusSync.Finish;
+
+                        await this.eventsService.AddSyncEventHistory(history);
 
                     }
                     else
                     {
-                        //history.Comment = $"Airtable Sync error {DateTime.UtcNow}";
-                        //history.StatusSync = StatusSync.Error;
+                        history.Comment = Logger.ReadLogFile();
+                        history.StatusSync = StatusSync.Error;
+                        await this.eventsService.AddSyncEventHistory(history);
                     }
                 }
             }
             catch (Exception ex)
             {
-                //history.Comment = $"Airtable Sync error: {ex.Message}"; 
-                //history.StatusSync = StatusSync.Error;
-            }
-            finally
-            {
-                //.FinishAsync = DateTime.Now;
-                //await this.eventsService.UpdateSyncEventHistory(history);
+                history.Comment = Logger.ReadLogFile(); ;
+                history.StatusSync = StatusSync.Error;
+                await this.eventsService.AddSyncEventHistory(history);
             }
         }
 

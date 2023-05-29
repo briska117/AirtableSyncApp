@@ -18,7 +18,7 @@ namespace AirTableDatabase.DBModels
         public string SyncEventId { get; set; }
         public DateTime StartSync { get; set; }
 
-        public DateTime FinishAsync { get; set; }
+        public DateTime FinishSync { get; set; }
 
         public string Comment { get; set; } 
 

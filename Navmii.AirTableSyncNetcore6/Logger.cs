@@ -77,6 +77,20 @@ namespace Navmii.AirtableSync
             catch { }
         }
 
+        public static string ReadLogFile()
+        {
+            try
+            {
+                string logPath = string.Format("{0}\\Log{1:yyyyMMdd}.txt", AssemblyDir, DateTime.UtcNow);
+                var file = System.IO.File.ReadAllText(logPath);
+                return file;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
         public static string GetProgressBar(int value, int count)
         {
             int index = value % count;
