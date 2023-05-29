@@ -34,6 +34,11 @@ namespace AirTableWebApi.Services.UserProjects
             return true;
         }
 
+        public Task<List<UserProject>> GetProjectsByUser(string userId)
+        {
+            return this.userProjectRepository.GetProjectsByUser(userId);
+        }
+
         public async Task<UserProject> GetUserProject(string id)
         {
             return await this.userProjectRepository.GetUserProject(id);

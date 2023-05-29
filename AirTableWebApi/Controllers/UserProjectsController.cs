@@ -67,14 +67,13 @@ namespace AirTableWebApi.Controllers
         {
             var userClaims = User.Claims;
             var idUser = userClaims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(idUser))
+            var projectsFromUser = await this.userProjectService.GetProjectsByUser(idUser);
+            if(projectsFromUser == null)
             {
-                return BadRequest();
+                return NotFound();
             }
-            List<String> arrayProjectsFromUser = new List<String>();
-            List<UserProject> userProjects = await this.userProjectService.GetUserProjects();
-            arrayProjectsFromUser = userProjects.Where(up => up.UserId == idUser).Select(p => p.ProjectAsync.Name).ToList();
-            return Ok(arrayProjectsFromUser);
+
+            return Ok(projectsFromUser);
         }
 
         [HttpPost]

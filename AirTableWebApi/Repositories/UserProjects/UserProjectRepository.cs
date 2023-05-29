@@ -28,6 +28,24 @@ namespace AirTableWebApi.Repositories.UserProjects
             }
         }
 
+        public async Task<List<UserProject>> GetProjectsByUser(string userId)
+        {
+            try
+            {
+                List<UserProject> userProjects = await this.applicationDB.UserProjects.Where(cp => cp.UserId == userId)
+                    .Include(cp=> cp.ProjectAsync.ClientPrefix)
+                    .Include(cp => cp.ProjectAsync.CollectionMode)
+                    .Include(cp => cp.ProjectAsync.CountryPrefix)
+                    .ToListAsync();
+                return userProjects;
+            }
+            catch (Exception ex)
+            {
+
+                throw new Exception($"Error in get Projects with user Id {userId} : {ex.Message}");
+            }
+        }
+
         public async Task<UserProject> GetUserProject(string id)
         {
             try
