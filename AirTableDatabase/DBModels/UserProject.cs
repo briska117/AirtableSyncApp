@@ -12,7 +12,7 @@ namespace AirTableDatabase.DBModels
         public string UserId { get; set; }
         [Required]
         [ForeignKey("Project")]
-        public string ProjectId { get;set;}
+        public string ProjectId { get;set; }
         public virtual Project ProjectAsync { get; set; }
     }
 }
