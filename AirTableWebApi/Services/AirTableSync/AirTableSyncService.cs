@@ -1,5 +1,5 @@
 ﻿using AirTableDatabase.DBModels;
-using AirTableWebApi.Services.AsyncEvents;
+using AirTableWebApi.Services.SyncEvents;
 using AirTableWebApi.Services.Projects;
 using Navmii.AirtableSync;
 using Navmii.AirTableSyncNetcore6;
@@ -10,9 +10,9 @@ namespace AirTableWebApi.Services.AirTableSync
     public class AirTableSyncService: IAirTableSyncService
     {
         private readonly IProjectsService projectsService;
-        private readonly IAsyncEventsService eventsService;
+        private readonly ISyncEventsService eventsService;
 
-        public AirTableSyncService(IProjectsService projectsService, IAsyncEventsService eventsService)
+        public AirTableSyncService(IProjectsService projectsService, ISyncEventsService eventsService)
         {
             this.projectsService = projectsService;
             this.eventsService = eventsService;

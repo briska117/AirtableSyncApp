@@ -122,5 +122,31 @@ namespace AirTableWebApi.Repositories.SyncEvents
                 throw new Exception(ex.Message);
             }
         }
+
+        public async Task<List<SyncEvent>> GetSyncEventsByProject(string projectId)
+        {
+            try
+            {
+                return await this.applicationDB.SyncEvents.Where(e => e.ProjectId == projectId).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<List<SyncEventHistory>> GetEventHistoryByEventId(string eventId)
+        {
+            try
+            {
+                return await this.applicationDB.EventHistories.Where(e => e.SyncEventId == eventId).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }

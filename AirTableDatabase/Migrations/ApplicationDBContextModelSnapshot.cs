@@ -264,13 +264,13 @@ namespace AirTableDatabase.Migrations
 
             modelBuilder.Entity("AirTableDatabase.DBModels.UserProject", b =>
                 {
-                    b.HasOne("AirTableDatabase.DBModels.Project", "ProjectAsync")
+                    b.HasOne("AirTableDatabase.DBModels.Project", "Project")
                         .WithMany()
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("ProjectAsync");
+                    b.Navigation("Project");
                 });
 #pragma warning restore 612, 618
         }

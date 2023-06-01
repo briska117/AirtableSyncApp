@@ -1,13 +1,13 @@
 ﻿using AirTableDatabase.DBModels;
 using AirTableWebApi.Repositories.SyncEvents;
 
-namespace AirTableWebApi.Services.AsyncEvents
+namespace AirTableWebApi.Services.SyncEvents
 {
-    public class AsyncEventsService : IAsyncEventsService
+    public class SyncEventsService : ISyncEventsService
     {
         private readonly ISyncEventsRepository eventsRepository;
 
-        public AsyncEventsService(ISyncEventsRepository eventsRepository)
+        public SyncEventsService(ISyncEventsRepository eventsRepository)
         {
             this.eventsRepository = eventsRepository;
         }
@@ -21,14 +21,19 @@ namespace AirTableWebApi.Services.AsyncEvents
             return await eventsRepository.AddSyncEventHistory(asyncEventHistory);
         }
 
-        public async Task<SyncEvent> GetAsyncEvent(string id)
+        public async Task<SyncEvent> GetSyncEvent(string id)
         {
             return await eventsRepository.GetSyncEvent(id);
         }
 
-        public async Task<List<SyncEvent>> GetAsyncEvents()
+        public async Task<List<SyncEvent>> GetSyncEvents()
         {
             return await eventsRepository.GetSyncEvents();
+        }
+
+        public async Task<List<SyncEventHistory>> GetEventHistoryByEventtId(string eventId)
+        {
+            return await this.eventsRepository.GetEventHistoryByEventId(eventId);
         }
 
         public async Task<List<SyncEvent>> GetProjectAsyncEvent(string projectId)
@@ -38,9 +43,30 @@ namespace AirTableWebApi.Services.AsyncEvents
             return result;
         }
 
+        public async Task<List<SyncEventsView>> GetProjectSyncEventFull(string projectId)
+        {
+            List<SyncEventsView> eventsViews = new List<SyncEventsView>();
+            var events = await this.GetSyncEventsByProject(projectId);
+            foreach (var item in events)
+            {
+                eventsViews.Add(
+                    new SyncEventsView {
+                        SyncEvent = item,
+                        SyncEventHistories = await this.GetEventHistoryByEventtId(item.SyncEventId)
+                    });
+            }
+
+            return eventsViews;
+        }
+
         public async Task<SyncEventHistory> GetSyncEventHistory(string id)
         {
             return await this.eventsRepository.GetSyncEventHistory(id); 
+        }
+
+        public Task<List<SyncEvent>> GetSyncEventsByProject(string projectId)
+        {
+            return this.eventsRepository.GetSyncEventsByProject(projectId); 
         }
 
         public async Task<bool> RemoveAsyncEvent(string id)

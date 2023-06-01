@@ -1,6 +1,6 @@
 ﻿using AirTableDatabase.DBModels;
 using AirTableWebApi.Configurations;
-using AirTableWebApi.Services.AsyncEvents;
+using AirTableWebApi.Services.SyncEvents;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -13,9 +13,9 @@ namespace AirTableWebApi.Controllers
     [ApiController]
     public class SyncEventsController : ControllerBase
     {
-        private readonly IAsyncEventsService eventsService;
+        private readonly ISyncEventsService eventsService;
 
-        public SyncEventsController(IAsyncEventsService eventsService)
+        public SyncEventsController(ISyncEventsService eventsService)
         {
             this.eventsService = eventsService;
         }
@@ -23,9 +23,9 @@ namespace AirTableWebApi.Controllers
         [Authorize(
             Policy = IdentitySettings.CustomerRightsPolicyName,
             AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<ActionResult<List<SyncEvent>>> GetAsyncEvents()
+        public async Task<ActionResult<List<SyncEvent>>> GetSyncEvents()
         {
-            return await eventsService.GetAsyncEvents();    
+            return await eventsService.GetSyncEvents();    
         }
 
         [HttpGet("{id}")]
@@ -38,7 +38,21 @@ namespace AirTableWebApi.Controllers
             {
                 return BadRequest();
             }
-            return await eventsService.GetAsyncEvent(id);
+            return await eventsService.GetSyncEvent(id);
+        }
+
+
+        [HttpGet("GetProjectSyncEventFull/{projectId}")]
+        [Authorize(
+            Policy = IdentitySettings.CustomerRightsPolicyName,
+            AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult<List<SyncEventsView>>> GetProjectSyncEventFull([FromRoute] string projectId)
+        {
+            if (string.IsNullOrEmpty(projectId))
+            {
+                return BadRequest();
+            }
+            return await eventsService.GetProjectSyncEventFull(projectId);
         }
 
 

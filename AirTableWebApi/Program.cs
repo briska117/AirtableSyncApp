@@ -10,7 +10,7 @@ using AirTableWebApi.Repositories.RelatedTables;
 using AirTableWebApi.Repositories.UserProjects;
 using AirTableWebApi.Services.Account;
 using AirTableWebApi.Services.AirTableSync;
-using AirTableWebApi.Services.AsyncEvents;
+using AirTableWebApi.Services.SyncEvents;
 using AirTableWebApi.Services.Auth;
 using AirTableWebApi.Services.ClientPrefixes;
 using AirTableWebApi.Services.CollectionModes;
@@ -28,8 +28,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 string? connectionString = builder.Configuration.GetConnectionString("AirTableConnection");
-builder.Services.AddDbContext<ApplicationDBContext>(options => options.UseNpgsql(connectionString),ServiceLifetime.Singleton);
-
+builder.Services.AddDbContext<ApplicationDBContext>(options => options.UseNpgsql(connectionString),ServiceLifetime.Transient);
 string? connectionIdentity = builder.Configuration.GetConnectionString("IdentityConnection");
 builder.Services.AddDbContext<IdentityContext>(options => options.UseNpgsql(connectionIdentity));
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
@@ -53,7 +52,7 @@ builder.Services.AddTransient<IAccountManagerService, AccountManagerService>();
 builder.Services.AddTransient<IClientPrefixService, ClientPrefixService>();
 builder.Services.AddTransient<ICountryPrefixService, CountryPrefixService>();
 builder.Services.AddTransient<ICollectionModeService, CollectionModeService>();
-builder.Services.AddTransient<IAsyncEventsService, AsyncEventsService>();
+builder.Services.AddTransient<ISyncEventsService, SyncEventsService>();
 builder.Services.AddTransient<IRelatedTablesService, RelatedTablesService>();
 builder.Services.AddTransient<IAuthService, AuthService>();
 builder.Services.AddTransient<IAirTableSyncService, AirTableSyncService>();

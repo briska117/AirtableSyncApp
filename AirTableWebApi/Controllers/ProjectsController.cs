@@ -1,7 +1,7 @@
 ﻿using AirTableDatabase;
 using AirTableDatabase.DBModels;
 using AirTableWebApi.Configurations;
-using AirTableWebApi.Services.AsyncEvents;
+using AirTableWebApi.Services.SyncEvents;
 using AirTableWebApi.Services.ClientPrefixes;
 using AirTableWebApi.Services.CollectionModes;
 using AirTableWebApi.Services.CountryPrefixes;
@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
+using System.Security.Claims;
+using AirTableWebApi.Services.UserProjects;
 
 namespace AirTableWebApi.Controllers
 {
@@ -19,21 +21,23 @@ namespace AirTableWebApi.Controllers
     public class ProjectsController : ControllerBase
     {
         private readonly IProjectsService projectsService;
-        private readonly IAsyncEventsService asyncEventsService;
+        private readonly ISyncEventsService asyncEventsService;
         private readonly ICollectionModeService collectionMode;
         private readonly IRelatedTablesService relatedTablesService;
         private readonly IClientPrefixService clientPrefixesService;
         private readonly ICountryPrefixService countryPrefixesService;
         private readonly IMapper mapper;
+        private readonly IUserProjectService userProjectService;
 
         public ProjectsController(
             IProjectsService projectsService,
-            IAsyncEventsService asyncEventsService,
+            ISyncEventsService asyncEventsService,
             ICollectionModeService collectionMode,
             IRelatedTablesService relatedTablesService,
             IClientPrefixService clientPrefixesService,
             ICountryPrefixService countryPrefixesService,
-            IMapper mapper
+            IMapper mapper,
+            IUserProjectService userProjectService
             )
         {
             this.projectsService = projectsService;
@@ -43,6 +47,7 @@ namespace AirTableWebApi.Controllers
             this.clientPrefixesService = clientPrefixesService;
             this.countryPrefixesService = countryPrefixesService;
             this.mapper = mapper;
+            this.userProjectService = userProjectService;
         }
 
         [HttpGet]
@@ -148,7 +153,7 @@ namespace AirTableWebApi.Controllers
             await this.projectsService.UpdateProject(project);
             foreach (SyncEvent asyncEvent in projectRequest.Events)
             {
-                var exist = await this.asyncEventsService.GetAsyncEvent(asyncEvent.SyncEventId);
+                var exist = await this.asyncEventsService.GetSyncEvent(asyncEvent.SyncEventId);
                 if (exist == null)
                 {
                     asyncEvent.ProjectId = projectRequest.Project.ProjectId;
@@ -203,6 +208,25 @@ namespace AirTableWebApi.Controllers
             };
 
             return Ok(view);
+        }
+
+
+        [HttpGet("GetProjectsByUser")]
+        [Authorize(
+           Policy = IdentitySettings.CustomerRightsPolicyName,
+           AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult> GetProjectsByUser()
+        {
+            var userClaims = User.Claims;
+            var idUser = userClaims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
+            var projectsFromUser = await this.userProjectService.GetProjectsByUser(idUser);
+            if (projectsFromUser == null)
+            {
+                return NotFound();
+            }
+            var projects = projectsFromUser.Select(up=>up.Project).ToList();   
+
+            return Ok(projects);
         }
     }
 }

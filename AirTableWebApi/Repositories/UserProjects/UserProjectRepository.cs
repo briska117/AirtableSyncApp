@@ -33,9 +33,9 @@ namespace AirTableWebApi.Repositories.UserProjects
             try
             {
                 List<UserProject> userProjects = await this.applicationDB.UserProjects.Where(cp => cp.UserId == userId)
-                    .Include(cp=> cp.ProjectAsync.ClientPrefix)
-                    .Include(cp => cp.ProjectAsync.CollectionMode)
-                    .Include(cp => cp.ProjectAsync.CountryPrefix)
+                    .Include(cp=> cp.Project.ClientPrefix)
+                    .Include(cp => cp.Project.CollectionMode)
+                    .Include(cp => cp.Project.CountryPrefix)
                     .ToListAsync();
                 return userProjects;
             }
@@ -64,7 +64,7 @@ namespace AirTableWebApi.Repositories.UserProjects
         {
             try
             {
-                List<UserProject> userProjects = await this.applicationDB.UserProjects.Include(p => p.ProjectAsync).ToListAsync();
+                List<UserProject> userProjects = await this.applicationDB.UserProjects.Include(p => p.Project).ToListAsync();
                 return userProjects;
             }
             catch (Exception ex)
@@ -97,7 +97,7 @@ namespace AirTableWebApi.Repositories.UserProjects
                 UserProject userProjectDB = await GetUserProject(userProject.UserProjectId);
                 userProjectDB.UserId = userProject.UserId;
                 userProjectDB.ProjectId = userProject.ProjectId;
-                userProjectDB.ProjectAsync = userProject.ProjectAsync;
+                userProjectDB.Project = userProject.Project;
                 this.applicationDB.UserProjects.Entry(userProjectDB);
                 await this.applicationDB.SaveChangesAsync();
                 return userProjectDB;

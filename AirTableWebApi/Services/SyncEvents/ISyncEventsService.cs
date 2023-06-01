@@ -1,11 +1,11 @@
 ﻿using AirTableDatabase.DBModels;
 
-namespace AirTableWebApi.Services.AsyncEvents
+namespace AirTableWebApi.Services.SyncEvents
 {
-    public interface IAsyncEventsService
+    public interface ISyncEventsService
     {
-        public Task<List<SyncEvent>> GetAsyncEvents();
-        public Task<SyncEvent> GetAsyncEvent(string id);
+        public Task<List<SyncEvent>> GetSyncEvents();
+        public Task<SyncEvent> GetSyncEvent(string id);
         public Task<List<SyncEvent>> GetProjectAsyncEvent(string projectId);
         public Task<SyncEvent> AddAsyncEvent(SyncEvent asyncEvent);
         public Task<SyncEvent> UpdateAsyncEvent(SyncEvent asyncEvent);
@@ -13,5 +13,8 @@ namespace AirTableWebApi.Services.AsyncEvents
         public Task<SyncEventHistory> GetSyncEventHistory(string id);
         public Task<SyncEventHistory> UpdateSyncEventHistory(SyncEventHistory asyncEventHistory);
         public Task<bool> RemoveAsyncEvent(string id);
+        public Task<List<SyncEvent>> GetSyncEventsByProject(string projectId);
+        public Task<List<SyncEventHistory>> GetEventHistoryByEventtId(string eventId);
+        public Task<List<SyncEventsView>> GetProjectSyncEventFull(string projectId);
     }
 }
