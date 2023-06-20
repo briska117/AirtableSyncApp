@@ -28,7 +28,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 string? connectionString = builder.Configuration.GetConnectionString("AirTableConnection");
-builder.Services.AddDbContext<ApplicationDBContext>(options => options.UseNpgsql(connectionString),ServiceLifetime.Transient);
+builder.Services.AddDbContext<ApplicationDBContext>(options => options.UseNpgsql(connectionString),ServiceLifetime.Singleton);
 string? connectionIdentity = builder.Configuration.GetConnectionString("IdentityConnection");
 builder.Services.AddDbContext<IdentityContext>(options => options.UseNpgsql(connectionIdentity));
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
@@ -38,25 +38,25 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<IdentityUser>, UserClaimsPrincipalFactory<IdentityUser>>();
 
 //Start Repositories
-builder.Services.AddTransient<IProjectsRepository, ProjectsRepository>();
-builder.Services.AddTransient<IClientPrefixRepository, ClientPrefixRepository>();
-builder.Services.AddTransient<ICountryPrefixRepository, CountryPrefixRepository>();
-builder.Services.AddTransient<ICollectionModeRepository, CollectionModeRepository>();
-builder.Services.AddTransient<ISyncEventsRepository, SyncEventsRepository>();
-builder.Services.AddTransient<IRelatedTableRepository, RelatedTableRepository>();
-builder.Services.AddTransient<IUserProjectRepository, UserProjectRepository>();
+builder.Services.AddScoped<IProjectsRepository, ProjectsRepository>();
+builder.Services.AddScoped<IClientPrefixRepository, ClientPrefixRepository>();
+builder.Services.AddScoped<ICountryPrefixRepository, CountryPrefixRepository>();
+builder.Services.AddScoped<ICollectionModeRepository, CollectionModeRepository>();
+builder.Services.AddScoped<ISyncEventsRepository, SyncEventsRepository>();
+builder.Services.AddScoped<IRelatedTableRepository, RelatedTableRepository>();
+builder.Services.AddScoped<IUserProjectRepository, UserProjectRepository>();
 
 //Start Services
-builder.Services.AddTransient<IProjectsService, ProjectsService>();
-builder.Services.AddTransient<IAccountManagerService, AccountManagerService>();
-builder.Services.AddTransient<IClientPrefixService, ClientPrefixService>();
-builder.Services.AddTransient<ICountryPrefixService, CountryPrefixService>();
-builder.Services.AddTransient<ICollectionModeService, CollectionModeService>();
-builder.Services.AddTransient<ISyncEventsService, SyncEventsService>();
-builder.Services.AddTransient<IRelatedTablesService, RelatedTablesService>();
-builder.Services.AddTransient<IAuthService, AuthService>();
-builder.Services.AddTransient<IAirTableSyncService, AirTableSyncService>();
-builder.Services.AddTransient<IUserProjectService, UserProjectService>();
+builder.Services.AddScoped<IProjectsService, ProjectsService>();
+builder.Services.AddScoped<IAccountManagerService, AccountManagerService>();
+builder.Services.AddScoped<IClientPrefixService, ClientPrefixService>();
+builder.Services.AddScoped<ICountryPrefixService, CountryPrefixService>();
+builder.Services.AddScoped<ICollectionModeService, CollectionModeService>();
+builder.Services.AddScoped<ISyncEventsService, SyncEventsService>();
+builder.Services.AddScoped<IRelatedTablesService, RelatedTablesService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAirTableSyncService, AirTableSyncService>();
+builder.Services.AddSingleton<IUserProjectService, UserProjectService>();
 
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));

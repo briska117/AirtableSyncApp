@@ -133,6 +133,9 @@ namespace AirTableWebApi.Controllers
                 asyncEvent.ProjectId = project.ProjectId;
                 await this.asyncEventsService.AddAsyncEvent(asyncEvent);    
             }
+            var userClaims = User.Claims;
+            var idUser = userClaims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
+            await this.userProjectService.AddUserProject(new UserProject { ProjectId=project.ProjectId, UserId =idUser}  );
             return Ok(projectRequest);
         }
         [HttpPut]
@@ -151,6 +154,7 @@ namespace AirTableWebApi.Controllers
             }
             Project project = this.mapper.Map<Project>(projectRequest.Project);
             await this.projectsService.UpdateProject(project);
+            var eventsDB = await this.asyncEventsService.GetProjectAsyncEvent(projectRequest.Project.ProjectId);
             foreach (SyncEvent asyncEvent in projectRequest.Events)
             {
                 var exist = await this.asyncEventsService.GetSyncEvent(asyncEvent.SyncEventId);
@@ -162,8 +166,15 @@ namespace AirTableWebApi.Controllers
                 else
                 {
                     await this.asyncEventsService.UpdateAsyncEvent(asyncEvent);
+                    eventsDB.Remove(exist);
+
                 }
                 
+            }
+
+            foreach (var item in eventsDB)
+            {
+                await this.asyncEventsService.RemoveAsyncEvent(item.SyncEventId);
             }
 
             return Ok(projectRequest);
@@ -188,24 +199,39 @@ namespace AirTableWebApi.Controllers
 
 
 
-        [HttpGet("GetProjectView/{projectId}")]
+        [HttpGet("GetProjectView")]
         [Authorize(
             Policy = IdentitySettings.CustomerRightsPolicyName,
             AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<ActionResult> GetProjectView([FromRoute] string projectId)
+        public async Task<ActionResult> GetProjectView(string? projectId)
         {
+            ProjectView view= new ProjectView();
             if (string.IsNullOrEmpty(projectId))
             {
-                return BadRequest(ModelState);
+                view = new ProjectView
+                {
+                    Project = new Project(),
+                    SyncEvents = new List<SyncEvent>(),
+                    CollectionModes = await this.collectionMode.GetCollectionModes(),
+                    RelatedTables = await this.relatedTablesService.GetRelatedTables(),
+                    ClientPrefixes = await this.clientPrefixesService.GetClientPrefixes(),
+                    CountryPrefixes = await this.countryPrefixesService.GetCountryPrefixes()
+                };
             }
-            ProjectView view = new ProjectView
+            else
             {
-                Project = await this.projectsService.GetProjectExtend(projectId),
-                CollectionModes = await this.collectionMode.GetCollectionModes(),
-                RelatedTables = await this.relatedTablesService.GetRelatedTables(),
-                ClientPrefixes = await this.clientPrefixesService.GetClientPrefixes(),
-                CountryPrefixes = await this.countryPrefixesService.GetCountryPrefixes()
-            };
+                view = new ProjectView
+                {
+                    Project = await this.projectsService.GetProjectExtend(projectId),
+                    SyncEvents = await this.asyncEventsService.GetProjectAsyncEvent(projectId),
+                    CollectionModes = await this.collectionMode.GetCollectionModes(),
+                    RelatedTables = await this.relatedTablesService.GetRelatedTables(),
+                    ClientPrefixes = await this.clientPrefixesService.GetClientPrefixes(),
+                    CountryPrefixes = await this.countryPrefixesService.GetCountryPrefixes()
+                };
+            }
+            
+            
 
             return Ok(view);
         }

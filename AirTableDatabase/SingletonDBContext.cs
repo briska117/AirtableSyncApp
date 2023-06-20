@@ -10,7 +10,7 @@ namespace AirTableDatabase
 {
     public class SingletonDBContext : DbContext
     {
-        public SingletonDBContext(DbContextOptions<ApplicationDBContext> opt) : base(opt)
+        public SingletonDBContext(DbContextOptions<SingletonDBContext> opt) : base(opt)
         {
 
         }

@@ -127,7 +127,7 @@ namespace AirTableWebApi.Repositories.SyncEvents
         {
             try
             {
-                return await this.applicationDB.SyncEvents.Where(e => e.ProjectId == projectId).ToListAsync();
+                return await this.applicationDB.SyncEvents.Where(e => e.ProjectId == projectId).OrderByDescending(e=>e.SyncTime).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -140,7 +140,7 @@ namespace AirTableWebApi.Repositories.SyncEvents
         {
             try
             {
-                return await this.applicationDB.EventHistories.Where(e => e.SyncEventId == eventId).ToListAsync();
+                return await this.applicationDB.EventHistories.Where(e => e.SyncEventId == eventId).OrderBy(e=>e.StartSync).ToListAsync();
             }
             catch (Exception ex)
             {

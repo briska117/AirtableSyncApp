@@ -22,7 +22,8 @@ namespace AirTableDatabase
         public DbSet<CollectionMode> CollectionModes { get; set; }  
         public DbSet<RelatedTable> RelatedTables { get; set; }  
         public DbSet<CollectionModeRelatedTable> CollectionModeRelatedTables { get; set; }
-        public DbSet<UserProject> UserProjects { get; set; }    
+        public DbSet<UserProject> UserProjects { get; set; }   
+        public DbSet<AirTableField> AirTableFields { get; set; }    
 
 
     }

@@ -97,7 +97,6 @@ namespace AirTableWebApi.Repositories.UserProjects
                 UserProject userProjectDB = await GetUserProject(userProject.UserProjectId);
                 userProjectDB.UserId = userProject.UserId;
                 userProjectDB.ProjectId = userProject.ProjectId;
-                userProjectDB.Project = userProject.Project;
                 this.applicationDB.UserProjects.Entry(userProjectDB);
                 await this.applicationDB.SaveChangesAsync();
                 return userProjectDB;

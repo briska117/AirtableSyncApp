@@ -4,6 +4,8 @@ using AirTableWebApi.Services.Projects;
 using Navmii.AirtableSync;
 using Navmii.AirTableSyncNetcore6;
 using System.Text;
+using AirTableWebApi.Services.CollectionModes;
+using AirTableWebApi.Services.RelatedTables;
 
 namespace AirTableWebApi.Services.AirTableSync
 {
@@ -11,14 +13,19 @@ namespace AirTableWebApi.Services.AirTableSync
     {
         private readonly IProjectsService projectsService;
         private readonly ISyncEventsService eventsService;
+        private readonly ICollectionModeService collectionMode;
+        private readonly IRelatedTablesService relatedTablesService;
 
-        public AirTableSyncService(IProjectsService projectsService, ISyncEventsService eventsService)
+        public AirTableSyncService(IProjectsService projectsService, ISyncEventsService eventsService, ICollectionModeService collectionMode,
+            IRelatedTablesService relatedTablesService)
         {
             this.projectsService = projectsService;
             this.eventsService = eventsService;
+            this.collectionMode = collectionMode;
+            this.relatedTablesService = relatedTablesService;
         }
 
-        private async void StartAirtableSyncProcces(Project project, string syncEventId)
+        private async void StartAirtableSyncProcces(Project project, string syncEventId, string[] mainList, string[] teamList)
         {
 
             var history = await this.eventsService.GetSyncEventHistory(syncEventId);
@@ -33,7 +40,9 @@ namespace AirTableWebApi.Services.AirTableSync
                     SyncTSheets = true,
                     ProjectPrefix = ProjectPrefix,
                     MainDatabaseID = project.MainDatabaseID,
-                    BackupPath = "Backup"
+                    BackupPath = "Backup",
+                    TableListMain = mainList,
+                    TableListTeam = teamList 
                 };
                 using (Synchronizer sync = new Synchronizer(settings))
                 {
@@ -87,8 +96,12 @@ namespace AirTableWebApi.Services.AirTableSync
             };
             await this.eventsService.AddSyncEventHistory(history);
             Project project = await this.projectsService.GetProjectExtend(projectId);
+            List<CollectionModeRelatedTable> collectionModeRelatedTables = await this.collectionMode.GetCollectionModeRelatedTable(project.Mode);
+            List<RelatedTable> relatedTables = await this.relatedTablesService.GetRelatedTables();
+            string[] main = collectionModeRelatedTables.Select(c => c.RelatedTableId).ToArray();
+            string[] team = collectionModeRelatedTables.Select(c => c.RelatedTableId).ToArray();
 
-            this.StartAirtableSyncProcces(project,history.SyncEventHistoryId);
+            this.StartAirtableSyncProcces(project,history.SyncEventHistoryId,main,team);
             return syncEvent;
         }
     }

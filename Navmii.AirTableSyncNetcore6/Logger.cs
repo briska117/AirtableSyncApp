@@ -81,7 +81,7 @@ namespace Navmii.AirtableSync
         {
             try
             {
-                string logPath = string.Format("{0}\\Log{1:yyyyMMdd}.txt", AssemblyDir, DateTime.UtcNow);
+                string logPath = string.Format("{0}\\Logs\\Log{1:yyyyMMdd}.txt", AssemblyDir, DateTime.UtcNow);
                 var file = System.IO.File.ReadAllText(logPath);
                 return file;
             }

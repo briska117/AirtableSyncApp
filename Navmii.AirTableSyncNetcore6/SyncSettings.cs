@@ -23,5 +23,8 @@ namespace Navmii.AirTableSyncNetcore6
         public string MainDatabaseID { get; set; }
 
         public string TSheetsApiToken { get; set; }
+
+        public string[] TableListMain { get; set; }
+        public string[] TableListTeam { get; set; }
     }
 }
