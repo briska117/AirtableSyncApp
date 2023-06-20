@@ -7,7 +7,6 @@ namespace AirTableWebApi.Repositories.Projects
     public class ProjectsRepository : IProjectsRepository
     {
         private readonly ApplicationDBContext dBContext;
-
         public ProjectsRepository(ApplicationDBContext dBContext)
         {
             this.dBContext = dBContext;
@@ -25,9 +24,7 @@ namespace AirTableWebApi.Repositories.Projects
             catch {
                 return false;
             }
-            
         }
-
         public async Task<bool> DeleteProject(string projectId)
         {
             try
@@ -36,16 +33,12 @@ namespace AirTableWebApi.Repositories.Projects
                 this.dBContext.Projects.Remove(project);
                 this.dBContext.SaveChanges();
                 return true;
-
             }
             catch (Exception)
             {
-
                 return false;
             }
-            
         }
-
         public async Task<Project> GetProject(string projectId)
         {
             try
@@ -55,12 +48,9 @@ namespace AirTableWebApi.Repositories.Projects
             }
             catch (Exception)
             {
-
                 return null;   
             }
-            
         }
-
         public async Task<Project> GetProjectExtend(string projectId)
         {
             try
@@ -74,12 +64,9 @@ namespace AirTableWebApi.Repositories.Projects
             }
             catch (Exception)
             {
-
                 return null;
             }
-
         }
-
         public async Task<List<Project>> GetProjects()
         {
             try
@@ -89,11 +76,9 @@ namespace AirTableWebApi.Repositories.Projects
             }
             catch (Exception)
             {
-
                 return null;
             }
         }
-
         public async Task<bool> UpdateProject(Project proyect)
         {
             try
@@ -110,14 +95,23 @@ namespace AirTableWebApi.Repositories.Projects
                 this.dBContext.Projects.Update(dbProyect);
                 this.dBContext.SaveChanges();
                 return true;
-
             }
             catch (Exception)
             {
-
                 return false;
             }
-            
+        }
+        public async Task<List<WindowsServiceProjectSynchronization>> GetWindowsServiceProjectSynchronization()
+        {
+            try
+            {
+                var projects = this.dBContext.ProjectSynchronization.ToList();
+                return projects;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
     }
 }

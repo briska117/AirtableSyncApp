@@ -49,7 +49,6 @@ namespace AirTableWebApi.Controllers
             this.mapper = mapper;
             this.userProjectService = userProjectService;
         }
-
         [HttpGet]
         [Authorize(
             Policy = IdentitySettings.CustomerRightsPolicyName,
@@ -95,8 +94,6 @@ namespace AirTableWebApi.Controllers
 
             return result;
         }
-
-
         [HttpGet("Extend/{projectId}")]
         [Authorize(
             Policy = IdentitySettings.CustomerRightsPolicyName,
@@ -115,7 +112,6 @@ namespace AirTableWebApi.Controllers
           
             return Ok(project);
         }
-
         [HttpPost]
         [Authorize(
             Policy = IdentitySettings.AdminRightsPolicyName,
@@ -185,9 +181,6 @@ namespace AirTableWebApi.Controllers
             await this.projectsService.DeleteProject(projectId);
             return Ok(true);
         }
-
-
-
         [HttpGet("GetProjectView/{projectId}")]
         [Authorize(
             Policy = IdentitySettings.CustomerRightsPolicyName,
@@ -209,8 +202,6 @@ namespace AirTableWebApi.Controllers
 
             return Ok(view);
         }
-
-
         [HttpGet("GetProjectsByUser")]
         [Authorize(
            Policy = IdentitySettings.CustomerRightsPolicyName,
@@ -227,6 +218,15 @@ namespace AirTableWebApi.Controllers
             var projects = projectsFromUser.Select(up=>up.Project).ToList();   
 
             return Ok(projects);
+        }
+        [HttpGet("GetWindowsServiceProjectSynchronization")]
+        [Authorize(
+           Policy = IdentitySettings.AdminRightsPolicyName,
+           AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult> GetWindowsServiceProjectSynchronization()
+        {
+            var result = await this.projectsService.GetWindowsServiceProjectSynchronization();
+            return Ok(result);
         }
     }
 }

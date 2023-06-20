@@ -18,9 +18,7 @@ namespace AirTableWebApi.Services.Projects
             {
                 throw new Exception("Error in Crate Project");
             }
-
         }
-
         public async Task DeleteProject(string projectId)
         {
             var project = this.GetProject(projectId);
@@ -33,9 +31,7 @@ namespace AirTableWebApi.Services.Projects
             {
                 throw new Exception($"Error in Delete Project with CountryPrefixId {projectId}");
             }
-            
         }
-
         public Task<Project> GetProject(string projectId)
         {
             var project = this.projects.GetProject(projectId);
@@ -45,23 +41,18 @@ namespace AirTableWebApi.Services.Projects
             }
             return project; 
         }
-
         public async Task<List<Project>> GetProjects()
         {
             return await this.projects.GetProjects();     
         }
-
         public async Task UpdateProject(Project project)
         {
-            
             var result = await this.projects.UpdateProject(project);
             if (!result)
             {
                 throw new Exception($"Error in Update Project with CountryPrefixId {project.ProjectId}");
             }
-             
         }
-
         public async Task<bool> ProjectExist(string projectId)
         {
             var projectExist = await this.projects.GetProject(projectId);
@@ -71,10 +62,13 @@ namespace AirTableWebApi.Services.Projects
             }
             return true;    
         }
-
         public Task<Project> GetProjectExtend(string projectId)
         {
             return this.projects.GetProjectExtend(projectId);   
+        }
+        public async Task<List<WindowsServiceProjectSynchronization>> GetWindowsServiceProjectSynchronization()
+        {
+            return await this.projects.GetWindowsServiceProjectSynchronization();
         }
     }
 }

@@ -10,5 +10,6 @@ namespace AirTableWebApi.Repositories.Projects
         public Task<bool> DeleteProject(string projectId);
         public Task<bool> UpdateProject(Project project);
         public Task<Project> GetProjectExtend(string projectId);
+        public Task<List<WindowsServiceProjectSynchronization>> GetWindowsServiceProjectSynchronization();
     }
 }

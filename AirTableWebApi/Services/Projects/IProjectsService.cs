@@ -11,5 +11,6 @@ namespace AirTableWebApi.Services.Projects
         public Task UpdateProject(Project project);
         public Task<bool> ProjectExist(string projectId);
         public Task<Project> GetProjectExtend(string projectId);
+        public Task<List<WindowsServiceProjectSynchronization>> GetWindowsServiceProjectSynchronization();
     }
 }

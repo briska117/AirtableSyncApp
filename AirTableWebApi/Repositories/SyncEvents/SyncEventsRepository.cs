@@ -7,7 +7,6 @@ namespace AirTableWebApi.Repositories.SyncEvents
     public class SyncEventsRepository : ISyncEventsRepository
     {
         private readonly ApplicationDBContext applicationDB;
-
         public SyncEventsRepository(ApplicationDBContext applicationDB)
         {
             this.applicationDB = applicationDB;
@@ -25,7 +24,6 @@ namespace AirTableWebApi.Repositories.SyncEvents
                 throw new Exception(ex.Message);
             }
         }
-
         public async Task<SyncEventHistory> AddSyncEventHistory(SyncEventHistory asyncEventHistory)
         {
             try
@@ -40,7 +38,6 @@ namespace AirTableWebApi.Repositories.SyncEvents
                 throw new Exception(ex.Message);
             }
         }
-
         public async Task<SyncEvent> GetSyncEvent(string id)
         {
             try
@@ -53,7 +50,6 @@ namespace AirTableWebApi.Repositories.SyncEvents
                 throw new Exception(ex.Message);
             }
         }
-
         public async Task<List<SyncEvent>> GetSyncEvents()
         {
             try
@@ -65,7 +61,6 @@ namespace AirTableWebApi.Repositories.SyncEvents
                 throw new Exception(ex.Message);
             }
         }
-
         public async Task<SyncEventHistory> GetSyncEventHistory(string id)
         {
             try
@@ -77,7 +72,6 @@ namespace AirTableWebApi.Repositories.SyncEvents
                 throw new Exception(ex.Message);
             }
         }
-
         public async Task<bool> RemoveSyncEvent(string id)
         {
             try
@@ -92,7 +86,6 @@ namespace AirTableWebApi.Repositories.SyncEvents
                 throw new Exception(ex.Message);
             }
         }
-
         public async Task<SyncEvent> UpdateSyncEvent(SyncEvent asyncEvent)
         {
             try
@@ -107,7 +100,6 @@ namespace AirTableWebApi.Repositories.SyncEvents
                 throw new Exception(ex.Message);
             }
         }
-
         public async Task<SyncEventHistory> UpdateSyncEventHistory(SyncEventHistory asyncEventHistory)
         {
             try
@@ -122,7 +114,6 @@ namespace AirTableWebApi.Repositories.SyncEvents
                 throw new Exception(ex.Message);
             }
         }
-
         public async Task<List<SyncEvent>> GetSyncEventsByProject(string projectId)
         {
             try
@@ -131,11 +122,9 @@ namespace AirTableWebApi.Repositories.SyncEvents
             }
             catch (Exception ex)
             {
-
                 throw new Exception(ex.Message);
             }
         }
-
         public async Task<List<SyncEventHistory>> GetEventHistoryByEventId(string eventId)
         {
             try
@@ -144,7 +133,6 @@ namespace AirTableWebApi.Repositories.SyncEvents
             }
             catch (Exception ex)
             {
-
                 throw new Exception(ex.Message);
             }
         }
