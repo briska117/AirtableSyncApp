@@ -56,7 +56,7 @@ builder.Services.AddScoped<ISyncEventsService, SyncEventsService>();
 builder.Services.AddScoped<IRelatedTablesService, RelatedTablesService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAirTableSyncService, AirTableSyncService>();
-builder.Services.AddSingleton<IUserProjectService, UserProjectService>();
+builder.Services.AddScoped<IUserProjectService, UserProjectService>();
 
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
