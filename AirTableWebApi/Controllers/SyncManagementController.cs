@@ -1,4 +1,5 @@
-﻿using AirTableWebApi.Configurations;
+﻿using AirTableDatabase.DBModels;
+using AirTableWebApi.Configurations;
 using AirTableWebApi.Services.AirTableSync;
 using AirTableWebApi.Services.Projects;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -50,5 +51,30 @@ namespace AirTableWebApi.Controllers
             }
             
         }
+
+        [HttpPost("AutomaticSyncProjects")]
+        public async Task<ActionResult> AutomaticSyncProjects([FromBody]List<AutomaticSyncProject> syncProjects)
+        {
+            try
+            {
+                List<SyncEvent> syncEvents = new List<SyncEvent>(); 
+                if(syncProjects == null || syncProjects.Count() < 1)
+                {
+                    return BadRequest();  
+                }
+                foreach (var syncProject in syncProjects)
+                {
+                    var applySync= await this.syncService.AutomaticAirtableSync(syncProject.ProjectId,syncProject.EventId);
+                    syncEvents.Add(applySync);  
+                }
+                return Ok(new { Success = true, Message = $"Sync start now  {DateTime.UtcNow}", events = syncProjects });
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
     }
 }

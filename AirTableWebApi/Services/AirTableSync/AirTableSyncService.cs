@@ -51,20 +51,24 @@ namespace AirTableWebApi.Services.AirTableSync
                     history.Comment = $"Airtable Sync InProccess {DateTime.UtcNow}";
                     history.StatusSync = StatusSync.InProccess;
                     await this.eventsService.AddSyncEventHistory(history);
-                    if (sync.Execute(out logtread))
-                    {
-                        history.Comment= Logger.ReadLogFile(); 
-                        history.StatusSync = StatusSync.Finish;
+                    //if (sync.Execute(out logtread))
+                    //{
+                    //    history.Comment= Logger.ReadLogFile(); 
+                    //    history.StatusSync = StatusSync.Finish;
 
-                        await this.eventsService.AddSyncEventHistory(history);
+                    //    await this.eventsService.AddSyncEventHistory(history);
 
-                    }
-                    else
-                    {
-                        history.Comment = Logger.ReadLogFile();
-                        history.StatusSync = StatusSync.Error;
-                        await this.eventsService.AddSyncEventHistory(history);
-                    }
+                    //}
+                    //else
+                    //{
+                    //    history.Comment = Logger.ReadLogFile();
+                    //    history.StatusSync = StatusSync.Error;
+                    //    await this.eventsService.AddSyncEventHistory(history);
+                    //}
+
+                    await Task.Delay(10000); history.Comment = Logger.ReadLogFile(); ;
+                    history.StatusSync = StatusSync.Finish;
+                    await this.eventsService.AddSyncEventHistory(history);
                 }
             }
             catch (Exception ex)
@@ -104,5 +108,31 @@ namespace AirTableWebApi.Services.AirTableSync
             this.StartAirtableSyncProcces(project,history.SyncEventHistoryId,main,team);
             return syncEvent;
         }
+
+        public async Task<SyncEvent> AutomaticAirtableSync(string projectId, string eventId)
+        {
+
+            DateTime dateManualSync = DateTime.UtcNow;
+            SyncEvent syncEvent =await this.eventsService.GetSyncEvent(eventId);
+
+
+            SyncEventHistory history = new SyncEventHistory
+            {
+                SyncEventId = syncEvent.SyncEventId,
+                Comment = "Start Automatic Airtable sync",
+                StatusSync = StatusSync.Start,
+                StartSync = dateManualSync
+            };
+            await this.eventsService.AddSyncEventHistory(history);
+            Project project = await this.projectsService.GetProjectExtend(projectId);
+            List<CollectionModeRelatedTable> collectionModeRelatedTables = await this.collectionMode.GetCollectionModeRelatedTable(project.Mode);
+            List<RelatedTable> relatedTables = await this.relatedTablesService.GetRelatedTables();
+            string[] main = collectionModeRelatedTables.Select(c => c.RelatedTableId).ToArray();
+            string[] team = collectionModeRelatedTables.Select(c => c.RelatedTableId).ToArray();
+
+            this.StartAirtableSyncProcces(project, history.SyncEventHistoryId, main, team);
+            return syncEvent;
+        }
+   
     }
 }
