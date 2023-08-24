@@ -66,6 +66,12 @@ namespace AirTableWebApi.Controllers
             List<RelatedTable> relatedTables = await this.relatedTablesService.GetRelatedTables();
             List<String> ids = collectionModeRelatedTables.Select(c => c.RelatedTableId).ToList();
             relatedTables = relatedTables.Where(r => ids.Contains(r.RelatedTableId)).ToList();
+            foreach (var item in relatedTables)
+            {
+                var info = collectionModeRelatedTables.FirstOrDefault(c=>c.RelatedTableId==item.RelatedTableId);
+                item.TeamList = info.IsTeam;
+                item.MainList = info.IsMain;    
+            }
             return Ok(new {collectionMode=collectionMode,relatedTables=relatedTables});
         }
 
