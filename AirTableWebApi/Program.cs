@@ -23,12 +23,16 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
+using AirTableWebApi.Services.AirTableFields;
+using AirTableWebApi.Repositories.AirTableFields;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 string? connectionString = builder.Configuration.GetConnectionString("AirTableConnection");
 builder.Services.AddDbContext<ApplicationDBContext>(options => options.UseNpgsql(connectionString),ServiceLifetime.Singleton);
+
+
 string? connectionIdentity = builder.Configuration.GetConnectionString("IdentityConnection");
 builder.Services.AddDbContext<IdentityContext>(options => options.UseNpgsql(connectionIdentity));
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
@@ -45,6 +49,7 @@ builder.Services.AddScoped<ICollectionModeRepository, CollectionModeRepository>(
 builder.Services.AddScoped<ISyncEventsRepository, SyncEventsRepository>();
 builder.Services.AddScoped<IRelatedTableRepository, RelatedTableRepository>();
 builder.Services.AddScoped<IUserProjectRepository, UserProjectRepository>();
+builder.Services.AddScoped<IAirTableFieldsRepository, AirTableFieldsRepository>();
 
 //Start Services
 builder.Services.AddScoped<IProjectsService, ProjectsService>();
@@ -57,6 +62,7 @@ builder.Services.AddScoped<IRelatedTablesService, RelatedTablesService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAirTableSyncService, AirTableSyncService>();
 builder.Services.AddScoped<IUserProjectService, UserProjectService>();
+builder.Services.AddScoped<IAirTableFieldsService, AirTableFieldsService>();
 
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));

@@ -82,6 +82,21 @@ namespace AirTableWebApi.Repositories.CollectionModes
             }
         }
 
+        public async Task<bool> DeleteRangeCollectionModeRelatedTable(List<CollectionModeRelatedTable> relatedTables)
+        {
+            try
+            {
+                this.applicationDB.CollectionModeRelatedTables.RemoveRange(relatedTables);
+                await this.applicationDB.SaveChangesAsync();    
+                return true;
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
+
         public async Task<CollectionMode> GetCollectionMode(string id)
         {
             try

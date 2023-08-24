@@ -20,6 +20,12 @@ namespace AirTableDatabase.DBModels
         [ForeignKey("RelatedTable")]
         public string RelatedTableId { get; set; }
 
+        public bool IsMain { get; set; }    
+
+        public bool IsTeam { get; set; }    
+        
+
+        public virtual RelatedTable RelatedTable { get; set; }  
 
     }
 }

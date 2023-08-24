@@ -33,7 +33,7 @@ namespace AirTableWebApi.Repositories.RelatedTables
         {
             try
             {
-                return await this.applicationDB.RelatedTables.FirstOrDefaultAsync(r => r.RelatedTableId == id);
+                return await this.applicationDB.RelatedTables.Include(r=>r.AirTableFields).FirstOrDefaultAsync(r => r.RelatedTableId == id);
             }
             catch (Exception ex)
             {
@@ -46,7 +46,7 @@ namespace AirTableWebApi.Repositories.RelatedTables
         {
             try
             {
-                return await this.applicationDB.RelatedTables.ToListAsync();
+                return await this.applicationDB.RelatedTables.Include(r=>r.AirTableFields).ToListAsync();
             }
             catch (Exception ex)
             {

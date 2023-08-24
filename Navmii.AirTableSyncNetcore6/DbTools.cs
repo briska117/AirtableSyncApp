@@ -70,9 +70,9 @@ namespace Navmii.AirtableSync
                 List<Fields> ids = new List<Fields>();
                 for (int i = 0; i < t.Count; i++)
                 {
-                    ids.Add(new Fields 
+                    ids.Add(new Fields
                     {
-                        FieldsCollection = new Dictionary<string, object> 
+                        FieldsCollection = new Dictionary<string, object>
                         {
                             { Field_Table, tableName},
                             { Field_Central, m[i]},
@@ -85,7 +85,7 @@ namespace Navmii.AirtableSync
                 UpdateTableCache(records, idsCache);
             }
         }
-        public static void ExecuteMultiCreate(List<List<(Fields, string)>> creates, string tableName, AirtableBase dbMain, AirtableBase dbTean, 
+        public static void ExecuteMultiCreate(List<List<(Fields, string)>> creates, string tableName, AirtableBase dbMain, AirtableBase dbTean,
             Dictionary<string, Dictionary<string, AirtableRecord>> cacheMain, Dictionary<string, Dictionary<string, AirtableRecord>> cacheTeam)
         {
             Dictionary<string, AirtableRecord> tableCache = cacheMain[tableName];
@@ -143,7 +143,7 @@ namespace Navmii.AirtableSync
 
         public static Dictionary<string, Dictionary<string, AirtableRecord>> ReadAllData(AirtableBase airtableBase, string[] tableNames)
         {
-            
+
             Dictionary<string, Dictionary<string, AirtableRecord>> tables = new Dictionary<string, Dictionary<string, AirtableRecord>>();
 
             foreach (string tableName in tableNames)
@@ -199,14 +199,9 @@ namespace Navmii.AirtableSync
 
         public static bool GetArchived(AirtableRecord record)
         {
-            var archived = record.GetField(Field_Archived);
-            if (archived == null)
-            {
-                return false;
-            }
-            bool myBool = bool.Parse(archived.ToString());
+            object archived = record.GetField(Field_Archived);
 
-            return myBool;
+            return archived != null && (bool)archived;
         }
 
         private static string GetString(AirtableRecord record, string fieldName)

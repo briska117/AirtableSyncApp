@@ -1,5 +1,6 @@
 ﻿using AirTableDatabase;
 using AirTableDatabase.DBModels;
+using Microsoft.EntityFrameworkCore;
 
 namespace AirTableWebApi.Repositories.AirTableFields
 {
@@ -32,9 +33,17 @@ namespace AirTableWebApi.Repositories.AirTableFields
             throw new NotImplementedException();
         }
 
-        public Task<List<AirTableField>> GetAirTableFieldsByTable(string tableId)
+        public async Task<List<AirTableField>> GetAirTableFieldsByTable(string tableId)
         {
-            throw new NotImplementedException();
+            try
+            {
+                return await this.applicationDB.AirTableFields.Where(a => a.RelatedTableId == tableId).ToListAsync();
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         public Task<bool> RemoveAirTableField(string airtableFieldId)

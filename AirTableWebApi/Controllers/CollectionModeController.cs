@@ -80,28 +80,21 @@ namespace AirTableWebApi.Controllers
             }
             try
             {
-                foreach (string id in collectionModeRequest.RelatedTables)
+                foreach (RelatedTableDto table in collectionModeRequest.RelatedTables)
                 {
-                    var validId = this.relatedTablesService.GetRelatedTable(id);
+                    var validId =await this.relatedTablesService.GetRelatedTable(table.TableId);
                     if (validId == null)
                     {
-                        return NotFound($"not fount related table with id {id}");
+                        return NotFound($"not fount related table with id {table.TableId}");
                     }
                 }
                 var collectionMode = await this.collectionMode.AddCollectionMode(collectionModeRequest.CollectionMode);
-                foreach (string id in collectionModeRequest.RelatedTables)
+                if (collectionModeRequest.TablesHaveChange)
                 {
-                    CollectionModeRelatedTable collectionModeRelatedTable = new CollectionModeRelatedTable
-                    {
-                        CollectionModeId = collectionMode.CollectionModeId,
-                        RelatedTableId = id
-                    };
-                    await this.collectionMode.AddCollectionModeRelatedTable(collectionModeRelatedTable);
+                    await AddOrUpdateRelatedTables(collectionModeRequest.RelatedTables, collectionMode.CollectionModeId);
                 }
 
-                var response = await this.GetCollectionModeAsync(collectionMode.CollectionModeId);
-
-
+                 var response = await this.GetCollectionModeAsync(collectionMode.CollectionModeId);
                 //Assert
                 var result = response as OkObjectResult;
                 return Ok(result.Value);
@@ -121,12 +114,12 @@ namespace AirTableWebApi.Controllers
             {
                 return BadRequest();
             }
-            foreach (string id in collectionModeRequest.RelatedTables)
+            foreach (RelatedTableDto table in collectionModeRequest.RelatedTables)
             {
-                var validId = this.relatedTablesService.GetRelatedTable(id);
+                var validId =await this.relatedTablesService.GetRelatedTable(table.TableId);
                 if (validId == null)
                 {
-                    return NotFound($"not fount related table with id {id}");
+                    return NotFound($"not fount related table with id {table.TableId}");
                 }
             }
             var collectionModeExist = await this.collectionMode.GetCollectionMode(collectionModeRequest.CollectionMode.CollectionModeId);
@@ -134,30 +127,12 @@ namespace AirTableWebApi.Controllers
             {
                 return NotFound();
             }
-            await this.collectionMode.UpdateCollectionMode(collectionModeRequest.CollectionMode);
-            List<CollectionModeRelatedTable> relatedTables = await this.collectionMode.GetCollectionModeRelatedTable(collectionModeRequest.CollectionMode.CollectionModeId);
-            foreach (string id in collectionModeRequest.RelatedTables)
+           var collectionMode = await this.collectionMode.UpdateCollectionMode(collectionModeRequest.CollectionMode);
+
+            if (collectionModeRequest.TablesHaveChange)
             {
-                
-
-                var exist = relatedTables.Where(r => r.RelatedTableId == id).FirstOrDefault();
-                if (exist == null)
-                {
-                    CollectionModeRelatedTable collectionModeRelatedTable = new CollectionModeRelatedTable
-                    {
-                        CollectionModeId = collectionModeRequest.CollectionMode.CollectionModeId,
-                        RelatedTableId = id
-                    };
-                    await this.collectionMode.AddCollectionModeRelatedTable(collectionModeRelatedTable);
-                }
-
-                relatedTables.Remove(exist);
+                await AddOrUpdateRelatedTables(collectionModeRequest.RelatedTables, collectionMode.CollectionModeId);
             }
-
-            foreach(var relatedTable in relatedTables)
-            {
-                await this.collectionMode.DeleteCollectionModeRelatedTable(relatedTable.CollectionModeId,relatedTable.RelatedTableId);
-            }  
 
             var response = await this.GetCollectionModeAsync(collectionModeRequest.CollectionMode.CollectionModeId);
 
@@ -244,5 +219,29 @@ namespace AirTableWebApi.Controllers
 
             return Ok(relatedTables);
         }
+    
+    
+        private async Task<List<CollectionModeRelatedTable>> AddOrUpdateRelatedTables(List<RelatedTableDto> relatedTables, string CollectionModeId) {
+            List<CollectionModeRelatedTable> result = new List<CollectionModeRelatedTable>();
+            var existItems = await this.collectionMode.GetCollectionModeRelatedTable(CollectionModeId);
+            await this.collectionMode.DeleteRangeCollectionModeRelatedTable(existItems);
+            foreach (RelatedTableDto table in relatedTables)
+            {
+                CollectionModeRelatedTable collectionModeRelatedTable = new CollectionModeRelatedTable
+                {
+                    CollectionModeId = CollectionModeId,
+                    RelatedTableId = table.TableId,
+                    IsMain = table.IsMain,
+                    IsTeam = table.IsTeam
+
+                };
+                await this.collectionMode.AddCollectionModeRelatedTable(collectionModeRelatedTable);
+                result.Add(collectionModeRelatedTable); 
+            }
+            return result;  
+
+        }
+    
+    
     }
 }

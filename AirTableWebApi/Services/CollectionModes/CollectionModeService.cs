@@ -32,6 +32,11 @@ namespace AirTableWebApi.Services.CollectionModes
             return await collectionModeRepository.DeleteCollectionModeRelatedTable(collectionId,relatedTableId);
         }
 
+        public async Task<bool> DeleteRangeCollectionModeRelatedTable(List<CollectionModeRelatedTable> relatedTables)
+        {
+            return await collectionModeRepository.DeleteRangeCollectionModeRelatedTable(relatedTables);
+        }
+
         public async Task<CollectionMode> GetCollectionMode(string id)
         {
             return await collectionModeRepository.GetCollectionMode(id);

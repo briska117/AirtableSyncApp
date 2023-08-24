@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AirTableDatabase.DBModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,7 +25,11 @@ namespace Navmii.AirTableSyncNetcore6
 
         public string TSheetsApiToken { get; set; }
 
+        public string CollectionModeId { get; set; }
+
         public string[] TableListMain { get; set; }
         public string[] TableListTeam { get; set; }
+
+        public List<RelatedTable> RelatedTables { get; set; }
     }
 }

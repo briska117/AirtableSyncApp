@@ -57,7 +57,7 @@ namespace AirTableWebApi.Services.Auth
                 issuer: this.jwtSettingsOptions.Issuer,
                 audience: this.jwtSettingsOptions.Issuer,
                 claims: claims,
-                expires: DateTime.Now.AddHours(this.jwtSettingsOptions.AccessExpiration),
+                expires: DateTime.Now.AddYears(this.jwtSettingsOptions.AccessExpiration),
                 signingCredentials: credentials);
             return new JwtSecurityTokenHandler().WriteToken(token);
         }

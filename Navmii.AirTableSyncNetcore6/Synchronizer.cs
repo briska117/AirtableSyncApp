@@ -18,7 +18,8 @@ namespace Navmii.AirtableSync
         public const int CurrentVersion = 8;
         private const string Table_TSheets = "TSheets";
         public const string Field_TSheetsUserID = "ID (leave blank if adding a new user)";
-        private static SyncSettings settings;
+
+        private readonly SyncSettings settings;
         private AirtableBase mainBase = null;
         private AirtableBase teamBase = null;
         private string backupZipPath = null;
@@ -34,56 +35,15 @@ namespace Navmii.AirtableSync
         {
             if (mode == UtilityMode.Rigs)
             {
-                return new[]
-                {
-                    "TSheets",
-                    "Teams",
-                    "Camps",
-                    "Chase Vehicles",
-                    "Daily Report Details",
-                    "Transponders",
-                    "Cars",
-                    "Systems",
-                    "Rigs",
-                    "Rig Assignments",
-                    "Re-Drive List",
-                    "Weekly Status Update"
-                };
+                return SyncTablesConfig.RigsModeMain;
             }
             else if (mode == UtilityMode.RigsTechM)
             {
-                return new[] 
-                {
-                    "TSheets",
-                    "Teams",
-                    "Camps",
-                    "Chase Vehicles",
-                    "Daily Report Details",
-                    "Transponders",
-                    "Cars",
-                    "Systems",
-                    "Rigs",
-                    "Rig Assignments",
-                    "Re-Drive List",
-                    "Weekly Status Update",
-                    "Maintenance Spend Detail",
-                    "Misc. Spend Detail"
-                };
+                return SyncTablesConfig.RigsModeTechMMain;
             }
             else //if (mode == UtilityMode.Pedestrians)
             {
-                return new[]
-                {
-                    "TSheets",
-                    "Teams",
-                    "Camps",
-                    "Chase Vehicles",
-                    "Packs",
-                    "Daily Camp Reports",
-                    "Pack Assignments",
-                    "Interactions",
-                    "Commute Times"
-                };
+                return SyncTablesConfig.PedestriansModeMain;
             }
         }
 
@@ -91,56 +51,15 @@ namespace Navmii.AirtableSync
         {
             if (mode == UtilityMode.Rigs)
             {
-                return new[]
-                {
-                    "TSheets",
-                    "Camps",
-                    "Chase Vehicles",
-                    "Daily Report Details",
-                    "Transponders",
-                    "Cars",
-                    "Systems",
-                    "Rigs",
-                    "Rig Assignments",
-                    "Re-Drive List",
-                    "Weekly Status Update",
-                    "Sync IDs"
-                };
+                return SyncTablesConfig.RigsModeTeam;
             }
             else if (mode == UtilityMode.RigsTechM)
             {
-                return new[]
-                {
-                    "TSheets",
-                    "Camps",
-                    "Chase Vehicles",
-                    "Daily Report Details",
-                    "Transponders",
-                    "Cars",
-                    "Systems",
-                    "Rigs",
-                    "Rig Assignments",
-                    "Re-Drive List",
-                    "Weekly Status Update",
-                    "Sync IDs",
-                    "Maintenance Spend Detail",
-                    "Misc. Spend Detail"
-                };
+                return SyncTablesConfig.RigsModeTechMTeam;
             }
             else //if (mode == UtilityMode.Pedestrians)
             {
-                return new[]
-                {
-                    "TSheets",
-                    "Camps",
-                    "Chase Vehicles",
-                    "Packs",
-                    "Daily Camp Reports",
-                    "Pack Assignments",
-                    "Interactions",
-                    "Commute Times",
-                    "Sync IDs"
-                };
+                return SyncTablesConfig.PedestriansModeTeam;
             }
         }
 
@@ -149,45 +68,38 @@ namespace Navmii.AirtableSync
             settings = syncSettings;
         }
 
-        public bool Execute(out StringBuilder logBuilder)
+        public bool Execute()
         {
-            logBuilder = new StringBuilder();
             // Connect to the central database
-            
+
             mainBase = Connect(settings.MainDatabaseID);
 
-            int version = ReadVersion(out UtilityMode  mode);
+            int version = ReadVersion(out UtilityMode mode);
             if (mode == UtilityMode.None)
             {
                 Logger.Write("SYNC TOOL MODE NOT RECOGNIZED");
-                logBuilder.Append("SYNC TOOL MODE NOT RECOGNIZED \r\n");
                 return false;
             }
             else if (version != CurrentVersion)
             {
                 Logger.Write($"SYNC TOOL AND DB VERSIONS DIFFER:\r\nSync tool version - {CurrentVersion}\r\nDatabase version - {version}");
-                logBuilder.Append($"SYNC TOOL AND DB VERSIONS DIFFER:\r\nSync tool version - {CurrentVersion}\r\nDatabase version - {version}\r\n");
                 return false;
             }
 
             Logger.Write("######## START ########");
-            logBuilder.Append("######## START ########");
 
             // Create an empty ZIP archive for database backups
             backupZipPath = CreateBackupZipArchive();
 
             DateTime start = DateTime.UtcNow;
             // Read data from all the tables in the central DB
-            //dataMain = DbTools.ReadAllData(mainBase, GetTableListMain(mode));
-            dataMain = DbTools.ReadAllData(mainBase, settings.TableListMain);
-            
+            dataMain = DbTools.ReadAllData(mainBase, GetTableListMain(mode));
             Logger.Write("Cached Central Database data in {0:#,##0} sec", (DateTime.UtcNow - start).TotalSeconds);
-            logBuilder.Append(String.Format("Cached Central Database data in {0:#,##0} sec", (DateTime.UtcNow - start).TotalSeconds));
 
             // Write all tables data into backup ZIP archive 
             //BackupData(string.Format("Central Database ({0})", mainDatabaseID), dataMain);
 
-            if (settings.SyncTSheets) 
+            if (settings.SyncTSheets)
             {
                 // Sync TSheets users into central DB
                 SyncTSheets();
@@ -208,18 +120,16 @@ namespace Navmii.AirtableSync
 
             //if (mode == UtilityMode.Pedestrians)
             //{
-            SyncPerDiemToMain("TSheets", perDiemData);
+            SyncPerDiemToMain(SyncTablesConfig.TSheets, perDiemData);
             //}
 
             // Read current last modification time for each table in the central DB
-            //modifiedMain = ReadModified(mainBase, GetTableListMain(mode));
-            modifiedMain = ReadModified(mainBase, settings.TableListMain);
+            modifiedMain = ReadModified(mainBase, GetTableListMain(mode));
 
             // Save current last modification time for each table in the central DB
             WriteModifiedTimes(settings.MainDatabaseID, modifiedMain);
 
             Logger.Write("######## END ########");
-            logBuilder.Append("######## END ########");
 
             return true;
         }
@@ -234,15 +144,11 @@ namespace Navmii.AirtableSync
             {
                 try
                 {
-                    var text = record.GetField("Version");
-                    int v = int.Parse(text.ToString());
+                    int v = Convert.ToInt32(record.GetField("Version"));
                     mode = (UtilityMode)(v / 100);
                     return (v % 100);
                 }
-                catch(Exception ex) {
-                    Logger.Write($"######## {ex.Message} ########");
-                    
-                }
+                catch { }
             }
 
             return 0;
@@ -264,7 +170,7 @@ namespace Navmii.AirtableSync
                         return value;
                     }
                 }
-                catch {}
+                catch { }
             }
 
             return new Dictionary<string, DateTime>();
@@ -338,7 +244,7 @@ namespace Navmii.AirtableSync
 
         private string CreateBackupZipArchive()
         {
-            int number = 0; 
+            int number = 0;
             string dateName = string.Format("{0:yyyyMMdd}", DateTime.UtcNow);
             string backupPath = settings.BackupPath;
 
@@ -379,7 +285,7 @@ namespace Navmii.AirtableSync
 
         private bool UserDataChanged(Dictionary<string, string> userData, AirtableRecord record)
         {
-            string[] fieldNames = new[] 
+            string[] fieldNames = new[]
             {
                 "First Name (required)",
                 "Last Name (required)",
@@ -420,7 +326,7 @@ namespace Navmii.AirtableSync
             List<string> archive = new List<string>();
             Dictionary<int, List<string>> userIDs = new Dictionary<int, List<string>>();
 
-            Dictionary<string, AirtableRecord> tableTSheets = dataMain["TSheets"];
+            Dictionary<string, AirtableRecord> tableTSheets = dataMain[SyncTablesConfig.TSheets];
 
             foreach (KeyValuePair<string, AirtableRecord> pair in tableTSheets)
             {
@@ -550,7 +456,7 @@ namespace Navmii.AirtableSync
 
             string[] recordIDs = JsonConvert.DeserializeObject<string[]>(json);
 
-            if (recordIDs != null && recordIDs.Length > 0 && dataMain["TSheets"].TryGetValue(recordIDs[0], out AirtableRecord record))
+            if (recordIDs != null && recordIDs.Length > 0 && dataMain[SyncTablesConfig.TSheets].TryGetValue(recordIDs[0], out AirtableRecord record))
             {
                 return "" + record.GetField("Last Name (required)");
             }
@@ -578,8 +484,7 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
             {
                 DateTime start = DateTime.UtcNow;
                 // Read data from all the tables in local DB
-                //dataTeam = DbTools.ReadAllData(teamBase, GetTableListTeam(mode));
-                dataTeam = DbTools.ReadAllData(teamBase, settings.TableListTeam);
+                dataTeam = DbTools.ReadAllData(teamBase, GetTableListTeam(mode));
                 Logger.Write("Cached data in {0:#,##0} sec", (DateTime.UtcNow - start).TotalSeconds);
 
                 // Write all tables data into backup ZIP archive 
@@ -588,21 +493,15 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
 
                 // TABLE "TSheets"
                 SyncTableToTeam(
-                    "TSheets",
-                    new[]
-                    {
-                        "First Name (required)",
-                        "Last Name (required)",
-                        "cf_Job Title",
-                        "cf_Work Number"
-                    },
+                    SyncTablesConfig.TSheets,
+                    SyncTablesConfig.TSheetsFields,
                     new string[0],
                     true,
                     new TSheetsRecordFilter(teamName));
 
                 //if (mode == UtilityMode.Pedestrians)
                 //{
-                UpdatePerDiemData("TSheets", perDiemData);
+                UpdatePerDiemData(SyncTablesConfig.TSheets, perDiemData);
                 //}
 
 
@@ -610,48 +509,29 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
                 if (mode == UtilityMode.Rigs || mode == UtilityMode.RigsTechM)
                 {
                     SyncTableToTeam(
-                        "Camps",
-                        new[]
-                        {
-                        "Camp",
-                        "Camp Lead",
-                        "State",
-                        "Address",
-                        "Storage Type",
-                        "Number of Systems",
-                        "First Collection Day",
-                        "Last Collection Day",
-                        "Notes" },
+                        SyncTablesConfig.Camps,
+                        SyncTablesConfig.CampsFields,
                         new string[0],
                         true,
                         new TeamRecordFilter(teamID, "Team"),
                         null,
                         new Dictionary<string, ValueResolver>
                         {
-                            { "Camp Lead", new LookupToLookupResolver(dataTeam["TSheets"], DbTools.GetMainDbIDs("TSheets", dataTeam), false) }
+                            { "Camp Lead", new LookupToLookupResolver(dataTeam[SyncTablesConfig.TSheets], DbTools.GetMainDbIDs(SyncTablesConfig.TSheets, dataTeam), false) }
                         });
                 }
                 else if (mode == UtilityMode.Pedestrians)
                 {
                     SyncTableToTeam(
-                        "Camps",
-                        new[]
-                        {
-                        "Camp",
-                        "Camp Lead",
-                        "State",
-                        "Address",
-                        "Number of Packs (not counting spares)",
-                        "First Collection Day",
-                        "Last Collection Day",
-                        "Notes" },
+                        SyncTablesConfig.Camps,
+                       SyncTablesConfig.CampsFieldsPedestrians,
                         new string[0],
                         true,
                         new TeamRecordFilter(teamID, "Team"),
                         null,
                         new Dictionary<string, ValueResolver>
                         {
-                            { "Camp Lead", new LookupToLookupResolver(dataTeam["TSheets"], DbTools.GetMainDbIDs("TSheets", dataTeam), false) }
+                            { "Camp Lead", new LookupToLookupResolver(dataTeam[SyncTablesConfig.TSheets], DbTools.GetMainDbIDs(SyncTablesConfig.TSheets, dataTeam), false) }
                         });
                 }
 
@@ -660,11 +540,8 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
                 if (mode == UtilityMode.Rigs || mode == UtilityMode.RigsTechM)
                 {
                     SyncTableToTeam(
-                    "Systems",
-                    new[]
-                    {
-                        "System ID#"
-                    },
+                    SyncTablesConfig.Systems,
+                    SyncTablesConfig.SystemsFields,
                     new string[0],
                     true,
                     new TeamRecordFilter(teamID, "Owning Team"));
@@ -672,12 +549,8 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
                 else if (mode == UtilityMode.Pedestrians)
                 {
                     SyncTableToTeam(
-                    "Packs",
-                    new[]
-                    {
-                        "Pack ID#",
-                        "Spare?"
-                    },
+                    SyncTablesConfig.Packs,
+                    SyncTablesConfig.PacksFields,
                     new string[0],
                     true,
                     new TeamRecordFilter(teamID, "Owning Team"));
@@ -688,27 +561,8 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
                 {
                     // TABLE "Cars"
                     SyncTableToTeam(
-                        "Cars",
-                        new[]
-                        {
-                            "Vehicle ID Number (DVN)",
-                            "VIN#",
-                            "License Plate",
-                            "Donlen Packet Present", // remove for TechM
-                            "Registration Expiry Date",
-                            "Insurance Expiry Date",
-                            "Visible Damage",
-                            "Date of Accident/Damage",
-                            "Description of Damage",
-                            "Resolution",
-                            "Estimated Repair Date",
-                            "Open Claims + Ins POC",
-                            "Recall Service Needed",
-                            "Recall Notes",
-                            "Maintenance Needed",
-                            "Maintenance Notes",
-                            "Other Notes"
-                        },
+                        SyncTablesConfig.Cars,
+                       SyncTablesConfig.CarsFieldsTeam,
                         new[]
                         {
                             "Photos Of Damage",
@@ -720,29 +574,9 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
 
                     SyncTableToMain(
                         teamName,
-                        "Cars",
+                        SyncTablesConfig.Cars,
                         null,
-                        new[]
-                        {
-                                "Vehicle ID Number (DVN)",
-                                "VIN#",
-                                "License Plate",
-                                "Donlen Packet Present", // remove for TechM
-                                "Registration Expiry Date",
-                                "Insurance Expiry Date",
-                                "Visible Damage",
-                                "Date of Accident/Damage",
-                                "Description of Damage",
-                                "Resolution",
-                                "Estimated Repair Date",
-                                "Open Claims + Ins POC",
-                                "Recall Service Needed",
-                                "Recall Notes",
-                                "Maintenance Needed",
-                                "Maintenance Notes",
-                                "Other Notes",
-                                "Owning Team"
-                        },
+                        SyncTablesConfig.CarsFieldsMain,
                         new[]
                         {
                                 "Photos Of Damage",
@@ -757,20 +591,16 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
 
                     // TABLE "Rigs"
                     SyncTableToTeam(
-                    "Rigs",
-                    new[]
-                    {
-                        "Car",
-                        "System"
-                    },
+                    SyncTablesConfig.Rigs,
+                    SyncTablesConfig.RigsFields,
                     new string[0],
                     true,
                     new TeamRecordFilter(teamID, "Owning Team"),
                     null,
                     new Dictionary<string, ValueResolver>
                     {
-                        { "Car", new LookupToLookupResolver(dataTeam["Cars"], DbTools.GetMainDbIDs("Cars", dataTeam), false) },
-                        { "System", new LookupToLookupResolver(dataTeam["Systems"], DbTools.GetMainDbIDs("Systems", dataTeam), false) }
+                        { "Car", new LookupToLookupResolver(dataTeam[SyncTablesConfig.Cars], DbTools.GetMainDbIDs(SyncTablesConfig.Cars, dataTeam), false) },
+                        { "System", new LookupToLookupResolver(dataTeam[SyncTablesConfig.Systems], DbTools.GetMainDbIDs(SyncTablesConfig.Systems, dataTeam), false) }
                     });
                 }
 
@@ -778,23 +608,9 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
                 // TABLE "Chase Vehicles"
                 SyncTableToMain(
                     teamName,
-                    "Chase Vehicles",
+                    SyncTablesConfig.ChaseVehicles,
                     null,
-                    new[]
-                    {
-                        "Company",
-                        "PickUp Location",
-                        "Pickup Date",
-                        "Reservation Number",
-                        "Renter Name on Reservation",
-                        "Make/Model",
-                        "Color",
-                        "License Plate Number",
-                        "Returned",
-                        "Return Location",
-                        "Return Date",
-                        "Country",
-                        "Owning Team" },
+                   SyncTablesConfig.ChaseVehiclesFields,
                     new[]
                     {
                         "Rental Agreement",
@@ -811,33 +627,9 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
                 {
                     SyncTableToMain(
                         teamName,
-                        "Daily Report Details",
+                        SyncTablesConfig.DailyReportDetails,
                         new[] { "Project" },
-                        new[]
-                        {
-                            "Report Date",
-                            "Project",
-                            "Camp",
-                            "Build Region",
-                            "DC",
-                            "CCs",
-                            "Counties",
-                            "Sun Angle Start",
-                            "Sun Angle End",
-                            "Weather",
-                            "Total Drivers IN CAMP (Working today or not)",
-                            "Total Operators IN CAMP (working today or not)",
-                            "AM Topics",
-                            "Personnel Arrivals/Departures",
-                            "Unique Identifier",
-                            "Total Collection Hours By Partial Collect Rigs",
-                            "SSDs",
-                            "Equipment",
-                            "Other Notable Events",
-                            "Tomorrow Plan",
-                            "Tomorrow Weather Forecast",
-                            "Debrief Topics"
-                        },
+                        SyncTablesConfig.DailyReportDetailsFields,
                         new[]
                         {
                             "Warboard"
@@ -845,173 +637,93 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
                         true,
                         new Dictionary<string, ValueResolver>
                         {
-                            { "Camp", new LookupToLookupResolver(dataMain["Camps"], DbTools.GetMainDbIDs("Camps", dataTeam)) },
-                            { "DC", new LookupToLookupResolver(dataMain["TSheets"], DbTools.GetMainDbIDs("TSheets", dataTeam)) },
-                            { "CCs", new LookupToLookupResolver(dataMain["TSheets"], DbTools.GetMainDbIDs("TSheets", dataTeam)) },
+                            { "Camp", new LookupToLookupResolver(dataMain[SyncTablesConfig.Camps], DbTools.GetMainDbIDs(SyncTablesConfig.Camps, dataTeam)) },
+                            { "DC", new LookupToLookupResolver(dataMain[SyncTablesConfig.TSheets], DbTools.GetMainDbIDs(SyncTablesConfig.TSheets, dataTeam)) },
+                            { "CCs", new LookupToLookupResolver(dataMain[SyncTablesConfig.TSheets], DbTools.GetMainDbIDs(SyncTablesConfig.TSheets, dataTeam)) },
                         });
 
                     SyncTableToMain(
                         teamName,
-                        "Transponders",
+                        SyncTablesConfig.Transponders,
                         null,
-                        new[]
-                        {
-                            "Transponder ID",
-                            "Date Installed",
-                            "Vehicle #",
-                            "Toll Network/System",
-                            "URL for Toll System",
-                            "Username",
-                            "Password",
-                            "Removal Date"
-                        },
+                        SyncTablesConfig.TranspondersFields,
                         new string[0],
                         true,
                         new Dictionary<string, ValueResolver>
                         {
-                            { "Vehicle #", new LookupToLookupResolver(dataMain["Cars"], DbTools.GetMainDbIDs("Cars", dataTeam)) }
+                            { "Vehicle #", new LookupToLookupResolver(dataMain[SyncTablesConfig.Cars], DbTools.GetMainDbIDs(SyncTablesConfig.Cars, dataTeam)) }
                         });
 
                     SyncTableToMain(
                         teamName,
-                        "Rig Assignments",
+                        SyncTablesConfig.RigAssignments,
                         new[] { "Project" },
-                        new[]
-                        {
-                            "Assignment Date",
-                            "Project",
-                            "Rig",
-                            "Team",
-                            "Camp",
-                            "Status",
-                            "Start Time",
-                            "Tiles Assigned",
-                            "Tiles Completed",
-                            "Driver",
-                            "Operator",
-                            "Action Taken",
-                            "Resolution",
-                            "Return",
-                            "Odometer",
-                            "Precip Percent",
-                            "SSD Percent",
-                            "Notes",
-                            "Case#/Contact#",
-                            "End Odometer"
-                        },
+                        SyncTablesConfig.RigAssignmentFields,
                         new string[0],
                         true,
                         new Dictionary<string, ValueResolver>()
                         {
                             //{ "Assignment Date", new LookupToTextResolver(dataTeam["Daily Report Details"], new[] { "Report Date" }) },
-                            { "Assignment Date", new LookupToLookupResolver(dataMain["Daily Report Details"], DbTools.GetMainDbIDs("Daily Report Details", dataTeam)) },
-                            { "Rig", new LookupToLookupResolver(dataMain["Rigs"], DbTools.GetMainDbIDs("Rigs", dataTeam)) },
-                            { "Camp", new LookupToLookupResolver(dataMain["Camps"], DbTools.GetMainDbIDs("Camps", dataTeam)) },
+                            { "Assignment Date", new LookupToLookupResolver(dataMain[SyncTablesConfig.DailyReportDetails], DbTools.GetMainDbIDs(SyncTablesConfig.DailyReportDetails, dataTeam)) },
+                            { "Rig", new LookupToLookupResolver(dataMain[SyncTablesConfig.Rigs], DbTools.GetMainDbIDs(SyncTablesConfig.Rigs, dataTeam)) },
+                            { "Camp", new LookupToLookupResolver(dataMain[SyncTablesConfig.Camps], DbTools.GetMainDbIDs(SyncTablesConfig.Camps, dataTeam)) },
                             { "Team", new DefaultLookupResolver(teamID) },
-                            { "Driver", new LookupToLookupResolver(dataMain["TSheets"], DbTools.GetMainDbIDs("TSheets", dataTeam)) },
-                            { "Operator", new LookupToLookupResolver(dataMain["TSheets"], DbTools.GetMainDbIDs("TSheets", dataTeam)) }
+                            { "Driver", new LookupToLookupResolver(dataMain[SyncTablesConfig.TSheets], DbTools.GetMainDbIDs(SyncTablesConfig.TSheets, dataTeam)) },
+                            { "Operator", new LookupToLookupResolver(dataMain[SyncTablesConfig.TSheets], DbTools.GetMainDbIDs(SyncTablesConfig.TSheets, dataTeam)) }
                         });
 
                     SyncTableToMain(
                         teamName,
-                        "Re-Drive List",
+                       SyncTablesConfig.ReDriveList,
                         new[] { "Re-Drive Date" },
-                        new[]
-                        {
-                            "Original Collect Date",
-                            "Re-Drive Date",
-                            "Build Region",
-                            "Mission",
-                            "Teams",
-                            "System",
-                            "Total Collected KM",
-                            "Reason",
-                            "Source",
-                            "Re-Collection Type"
-                        },
+                        SyncTablesConfig.ReDriveListFields,
                         new string[0],
                         true,
                         new Dictionary<string, ValueResolver>()
                         {
                             { "Teams", new DefaultLookupResolver(teamID) },
-                            { "System", new LookupToLookupResolver(dataMain["Systems"], DbTools.GetMainDbIDs("Systems", dataTeam), true) }
+                            { "System", new LookupToLookupResolver(dataMain[SyncTablesConfig.Systems], DbTools.GetMainDbIDs(SyncTablesConfig.Systems, dataTeam), true) }
                         });
 
                     SyncTableToMain(
                         teamName,
-                        "Weekly Status Update",
+                        SyncTablesConfig.WeeklyStatusUpdate,
                         new[] { "Estimated End of Collection Date" },
-                        new[] { 
-                            "Team",
-                            "Date Entered",
-                            "Rig Count",
-                            "Up Rig Count",
-                            "Collection Project",
-                            "Projected UKMs",
-                            "Current Camp",
-                            "Current City",
-                            "Current Collection Start Date",
-                            "Estimated End of Collection Date",
-                            "Estimated Completion %",
-                            "Possible Weather Down Dates",
-                            "Next Collection Project",
-                            "Next Camp City",
-                            "Next Estimated End of Collection Date"
-                        },
+                        SyncTablesConfig.WeeklyStatusUpdateFields,
                         new string[0],
                         true,
                         new Dictionary<string, ValueResolver>()
                         {
                             { "Team", new DefaultLookupResolver(teamID) },
-                            { "Current Camp", new LookupToLookupResolver(dataMain["Camps"], DbTools.GetMainDbIDs("Camps", dataTeam), true) }
+                            { "Current Camp", new LookupToLookupResolver(dataMain[SyncTablesConfig.Camps], DbTools.GetMainDbIDs(SyncTablesConfig.Camps, dataTeam), true) }
                         });
 
                     if (mode == UtilityMode.RigsTechM)
                     {
                         SyncTableToMain(
                             teamName,
-                            "Maintenance Spend Detail",
+                            SyncTablesConfig.MaintenanceSpendDetail,
                             new[] { "Vehicle Number" },
-                            new[] {
-                            "Record Date",
-                            "Vehicle Number",
-                            "Damage?",
-                            "Vendor Name",
-                            "TechM Invoice #",
-                            "Invoice Date",
-                            "Service Date",
-                            "Service Description",
-                            "Parts Cost",
-                            "Labor Cost/Fees"
-                            },
+                           SyncTablesConfig.MaintenanceSpendDetailFields,
                             new[] { "Maintenance Documents" },
                             true,
                             new Dictionary<string, ValueResolver>()
                             {
                                 { "Team", new DefaultLookupResolver(teamID) },
-                                { "Vehicle Number", new LookupToLookupResolver(dataMain["Cars"], DbTools.GetMainDbIDs("Cars", dataTeam), true) }
+                                { "Vehicle Number", new LookupToLookupResolver(dataMain[SyncTablesConfig.Cars], DbTools.GetMainDbIDs(SyncTablesConfig.Cars, dataTeam), true) }
                             });
 
                         SyncTableToMain(
                             teamName,
-                            "Misc. Spend Detail",
+                            SyncTablesConfig.MiscSpendDetail,
                             new[] { "Vehicle Number" },
-                            new[] {
-                            "Record Date",
-                            "Vehicle Number",
-                            "TechM Invoice #",
-                            "Invoice Date",
-                            "State/Province",
-                            "Expense Date",
-                            "Uncategorized Expense Description",
-                            "Total Expense Cost"
-                            },
+                           SyncTablesConfig.MiscSpendDetailFields,
                             new[] { "Receipt" },
                             true,
                             new Dictionary<string, ValueResolver>()
                             {
                                 { "Team", new DefaultLookupResolver(teamID) },
-                                { "Vehicle Number", new LookupToLookupResolver(dataMain["Rigs"], DbTools.GetMainDbIDs("Rigs", dataTeam), true) }
+                                { "Vehicle Number", new LookupToLookupResolver(dataMain[SyncTablesConfig.Rigs], DbTools.GetMainDbIDs(SyncTablesConfig.Rigs, dataTeam), true) }
                             });
                     }
                 }
@@ -1019,113 +731,58 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
                 {
                     SyncTableToMain(
                         teamName,
-                        "Daily Camp Reports",
+                        SyncTablesConfig.DailyCampReports,
                         new[] { "Report Date", "Camp" },
-                        new[]
-                        {
-                            "Report Date",
-                            "Camp",
-                            "FC",
-                            "T3(s)",
-                            "Sun Angle Start",
-                            "Sun Angle End",
-                            "Weather",
-                            "Total Collection Hours By Partial Collect Packs",
-                            "Total Field Staff in camp (working today or not)",
-                            "AM Topics",
-                            "Personnel Joining Or Leaving Camp",
-                            "SSDs",
-                            "Equipment",
-                            "Personnel Issues (Sick etc)",
-                            "Other Notable Events",
-                            "Tomorrow Plan",
-                            "Tomorrow Weather Forecast",
-                            "Debrief Topics",
-                            "Team"
-                        },
+                       SyncTablesConfig.DailyCampReportsfields,
                         new string[0],
                         true,
                         new Dictionary<string, ValueResolver>
                         {
-                            { "Camp", new LookupToLookupResolver(dataMain["Camps"], DbTools.GetMainDbIDs("Camps", dataTeam)) },
-                            { "FC", new LookupToLookupResolver(dataMain["TSheets"], DbTools.GetMainDbIDs("TSheets", dataTeam)) },
-                            { "T3(s)", new LookupToLookupResolver(dataMain["TSheets"], DbTools.GetMainDbIDs("TSheets", dataTeam)) },
+                            { "Camp", new LookupToLookupResolver(dataMain[SyncTablesConfig.Camps], DbTools.GetMainDbIDs(SyncTablesConfig.Camps, dataTeam)) },
+                            { "FC", new LookupToLookupResolver(dataMain[SyncTablesConfig.TSheets], DbTools.GetMainDbIDs(SyncTablesConfig.TSheets, dataTeam)) },
+                            { "T3(s)", new LookupToLookupResolver(dataMain[SyncTablesConfig.TSheets], DbTools.GetMainDbIDs(SyncTablesConfig.TSheets, dataTeam)) },
                             { "Team", new DefaultLookupResolver(teamID) },
                         });
 
                     SyncTableToMain(
                         teamName,
-                        "Pack Assignments",
+                        SyncTablesConfig.PackAssignments,
                         new[] { "Assignment Date", "Pack", "Camp", "Status" },
-                        new[]
-                        {
-                            "Assignment Date",
-                            "Pack",
-                            "Status",
-                            "Start Time",
-                            "Missions Assigned",
-                            "Missions Completed",
-                            "Spotter",
-                            "Operator",
-                            "Duty Fit Check",
-                            "Action Taken If Down",
-                            "Resolution of Down Reason",
-                            "Return",
-                            "Notes",
-                            "Case#/Contact#",
-                            "Team"
-                        },
+                       SyncTablesConfig.PackAssignmentsFields,
                         new string[0],
                         true,
                         new Dictionary<string, ValueResolver>()
                         {
-                            { "Assignment Date", new LookupToLookupResolver(dataMain["Daily Camp Reports"], DbTools.GetMainDbIDs("Daily Camp Reports", dataTeam)) },
-                            { "Pack", new LookupToLookupResolver(dataMain["Packs"], DbTools.GetMainDbIDs("Packs", dataTeam)) },
-                            { "Spotter", new LookupToLookupResolver(dataMain["TSheets"], DbTools.GetMainDbIDs("TSheets", dataTeam)) },
-                            { "Operator", new LookupToLookupResolver(dataMain["TSheets"], DbTools.GetMainDbIDs("TSheets", dataTeam)) },
+                            { "Assignment Date", new LookupToLookupResolver(dataMain[SyncTablesConfig.DailyCampReports], DbTools.GetMainDbIDs(SyncTablesConfig.DailyCampReports, dataTeam)) },
+                            { "Pack", new LookupToLookupResolver(dataMain[SyncTablesConfig.Packs], DbTools.GetMainDbIDs(SyncTablesConfig.Packs, dataTeam)) },
+                            { "Spotter", new LookupToLookupResolver(dataMain[SyncTablesConfig.TSheets], DbTools.GetMainDbIDs(SyncTablesConfig.TSheets, dataTeam)) },
+                            { "Operator", new LookupToLookupResolver(dataMain[SyncTablesConfig.TSheets], DbTools.GetMainDbIDs(SyncTablesConfig.TSheets, dataTeam)) },
                             { "Team", new DefaultLookupResolver(teamID) }
                         });
 
                     SyncTableToMain(
                         teamName,
-                        "Interactions",
+                        SyncTablesConfig.Interactions,
                         new[] { "Date And Time Of Interaction", "Interaction Type" },
-                        new[]
-                        {
-                            "Date And Time Of Interaction",
-                            "Interaction Type",
-                            "Pack Assignment",
-                            "Situation",
-                            "Resolution",
-                            "Team"
-                        },
+                        SyncTablesConfig.InteractionsFields,
                         new string[0],
                         true,
                         new Dictionary<string, ValueResolver>()
                         {
-                            { "Pack Assignment", new LookupToLookupResolver(dataMain["Pack Assignments"], DbTools.GetMainDbIDs("Pack Assignments", dataTeam)) },
+                            { "Pack Assignment", new LookupToLookupResolver(dataMain[SyncTablesConfig.PackAssignments], DbTools.GetMainDbIDs(SyncTablesConfig.PackAssignments, dataTeam)) },
                             { "Team", new DefaultLookupResolver(teamID) }
                         });
 
                     SyncTableToMain(
                         teamName,
-                        "Commute Times",
+                        SyncTablesConfig.CommuteTimes,
                         new[] { "Date and Commute Start Time", "Pack and Operators" },
-                        new[]
-                        {
-                            "Date and Commute Start Time",
-                            "Pack and Operators",
-                            "Type of Commute",
-                            "Commute Mode",
-                            "Commute End Time",
-                            "Notes",
-                            "Team"
-                        },
+                       SyncTablesConfig.CommuteTimesFields,
                         new string[0],
                         true,
                         new Dictionary<string, ValueResolver>()
                         {
-                            { "Pack and Operators", new LookupToLookupResolver(dataMain["Pack Assignments"], DbTools.GetMainDbIDs("Pack Assignments", dataTeam)) },
+                            { "Pack and Operators", new LookupToLookupResolver(dataMain[SyncTablesConfig.PackAssignments], DbTools.GetMainDbIDs(SyncTablesConfig.PackAssignments, dataTeam)) },
                             { "Team", new DefaultLookupResolver(teamID) }
                         });
                 }
@@ -1138,8 +795,7 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
                 dataTeam.Clear();
 
                 // Read current last modification time for each table in local DB
-                //modifiedTeam = ReadModified(teamBase, GetTableListTeam(mode));
-                modifiedTeam = ReadModified(teamBase, settings.TableListTeam);
+                modifiedTeam = ReadModified(teamBase, GetTableListTeam(mode));
 
                 // Save current last modification time for each table in local DB
                 WriteModifiedTimes(teamDatabaseID, modifiedTeam);
@@ -1252,8 +908,7 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
             foreach (KeyValuePair<string, AirtableRecord> pair in tableTeam)
             {
                 string idTeam = pair.Key;
-                AirtableRecord recordTeam = new AirtableRecord();
-                recordTeam = pair.Value;
+                AirtableRecord recordTeam = pair.Value;
 
                 if (mainDbIDs.TryGetValue(idTeam, out string idMain))
                 {
@@ -1286,7 +941,7 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
 
             bool modified = false;
 
-            Dictionary<string, int> perDiemMain = DbTools.GetPerDiemFields((Dictionary<string, object>)recordMain.Fields);
+            Dictionary<string, int> perDiemMain = DbTools.GetPerDiemFields(recordMain.Fields);
 
             foreach (KeyValuePair<string, int> pair in perDiemMain)
             {
@@ -1302,7 +957,7 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
                 }
             }
 
-            foreach (KeyValuePair<string, int> pair in perDiemTeam) 
+            foreach (KeyValuePair<string, int> pair in perDiemTeam)
             {
                 if (!perDiemMain.ContainsKey(pair.Key))
                 {
@@ -1404,15 +1059,15 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
 
                 if (FieldsPopulated(mandatoryFields, recordTeam) && !DbTools.GetArchived(recordTeam))
                 {
-                    if (!mainDbIDs.TryGetValue(idTeam, out string idMain) 
+                    if (!mainDbIDs.TryGetValue(idTeam, out string idMain)
                         || !tableMain.TryGetValue(idMain, out AirtableRecord recordMain))
                     {
                         create.Add(recordTeam);
                     }
-                    else if (DbTools.GetModified(recordTeam) > lastModifiedTeam 
+                    else if (DbTools.GetModified(recordTeam) > lastModifiedTeam
                         || (ignoreCentralChanges && DbTools.GetModified(recordMain) > lastModifiedMain))
                     {
-                        if (!update.TryGetValue(idMain, out AirtableRecord recordDuplicate) 
+                        if (!update.TryGetValue(idMain, out AirtableRecord recordDuplicate)
                             || DbTools.GetModified(recordTeam) > DbTools.GetModified(recordDuplicate))
                         {
                             update[idMain] = recordTeam;
@@ -1427,7 +1082,7 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
 
                 foreach (KeyValuePair<string, AirtableRecord> pair in update)
                 {
-                    Dictionary<string, object> fields = SyncFields((Dictionary<string, object>)pair.Value.Fields, fieldNames, referenceResolvers, !ignoreCentralChanges);
+                    Dictionary<string, object> fields = SyncFields(pair.Value.Fields, fieldNames, referenceResolvers, !ignoreCentralChanges);
                     SyncAttachments(pair.Value, fields, attachmentFields, !ignoreCentralChanges);
 
                     if (multiUpdate.Count == 0 || multiUpdate.Last().Count == 10)
@@ -1455,7 +1110,7 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
 
                 foreach (AirtableRecord record in create)
                 {
-                    Dictionary<string, object> fields = SyncFields((Dictionary<string, object>)record.Fields, fieldNames, referenceResolvers, !ignoreCentralChanges);
+                    Dictionary<string, object> fields = SyncFields(record.Fields, fieldNames, referenceResolvers, !ignoreCentralChanges);
                     SyncAttachments(record, fields, attachmentFields, !ignoreCentralChanges);
 
                     if (multiCreate.Count == 0 || multiCreate.Last().Count == 10)
@@ -1465,7 +1120,7 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
                             (new Fields()
                             {
                                 FieldsCollection = fields
-                            }, 
+                            },
                             record.Id)
                         });
                     }
@@ -1484,7 +1139,7 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
                 DbTools.ExecuteMultiCreate(multiCreate, tableName, mainBase, teamBase, dataMain, dataTeam);
 
                 Logger.Write($"Added: {create.Count}, updated: {update.Count}");
-                
+
                 return true;
             }
             else
@@ -1503,7 +1158,7 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
             DateTime lastModifiedTeam = GetLastModifiedTeam(tableName);
 
             Dictionary<string, AirtableRecord> tableMain = new Dictionary<string, AirtableRecord>();
-            HashSet<string> activeIDs = new HashSet<string>(); 
+            HashSet<string> activeIDs = new HashSet<string>();
 
             // filter main DB records and active records
             foreach (KeyValuePair<string, AirtableRecord> pair in dataMain[tableName])
@@ -1542,19 +1197,11 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
                         archive.Add(idTeam);
                     }
                 }
-                else if (DbTools.GetModified(recordMain) > lastModifiedMain 
+                else if (DbTools.GetModified(recordMain) > lastModifiedMain
                     || (ignoreLocalChanges && DbTools.GetModified(recordTeam) > lastModifiedTeam)
                     || (!activeIDs.Contains(idMain) && !DbTools.GetArchived(recordTeam)))
                 {
-                    bool containsKey = update.ContainsKey(idMain);
-                    if (containsKey)
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        update.Add(idMain, idTeam);
-                    }
+                    update.Add(idMain, idTeam);
                 }
                 else
                 {
@@ -1578,7 +1225,7 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
                 string idMain = pair.Key;
                 AirtableRecord recordMain = pair.Value;
 
-                Dictionary<string, object> fields = SyncFields((Dictionary<string, object>)recordMain.Fields, fieldNames, referenceResolvers, true);
+                Dictionary<string, object> fields = SyncFields(recordMain.Fields, fieldNames, referenceResolvers, true);
                 SyncAttachments(recordMain, fields, attachmentFields, true);
 
                 if (update.TryGetValue(idMain, out string idTeam))
@@ -1768,8 +1415,6 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
         {
             return new AirtableBase(settings.ApiKey, databaseID);
         }
-
-
 
         public void Dispose()
         {

@@ -25,7 +25,6 @@
   <ItemGroup>
      <Folder Include="Backup\" />
      <Folder Include="Repositories\Account\" />
-     <Folder Include="Services\AirTableFields\" />
   </ItemGroup>
 
   <ItemGroup>

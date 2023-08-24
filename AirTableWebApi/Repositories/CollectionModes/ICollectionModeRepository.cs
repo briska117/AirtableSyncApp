@@ -13,6 +13,7 @@ namespace AirTableWebApi.Repositories.CollectionModes
         public Task<CollectionModeRelatedTable> AddCollectionModeRelatedTable(CollectionModeRelatedTable modeRelatedTable);
         public Task<List<CollectionModeRelatedTable>> GetCollectionModeRelatedTable(string CollectionModeId);
         public Task<bool> DeleteCollectionModeRelatedTable(string collectionId, string relatedTableId);
+        public Task<bool> DeleteRangeCollectionModeRelatedTable(List<CollectionModeRelatedTable> relatedTables);
 
 
     }

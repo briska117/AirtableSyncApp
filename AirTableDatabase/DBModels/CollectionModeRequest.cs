@@ -10,6 +10,8 @@ namespace AirTableDatabase.DBModels
     {
         public CollectionMode CollectionMode { get; set; }  
 
-        public List<string> RelatedTables { get; set; }
+        public List<RelatedTableDto> RelatedTables { get; set; }
+
+        public bool TablesHaveChange { get; set; }
     }
 }
