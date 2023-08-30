@@ -25,6 +25,8 @@ using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
 using AirTableWebApi.Services.AirTableFields;
 using AirTableWebApi.Repositories.AirTableFields;
+using AirTableWebApi.Services.AirTableApi;
+using Navmii.Request;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,6 +65,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAirTableSyncService, AirTableSyncService>();
 builder.Services.AddScoped<IUserProjectService, UserProjectService>();
 builder.Services.AddScoped<IAirTableFieldsService, AirTableFieldsService>();
+builder.Services.AddScoped<IRequestService , RequestService>(); 
+builder.Services.AddScoped<IAirTableApiService, AirTableApiService>();
 
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));

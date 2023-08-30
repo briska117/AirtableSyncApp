@@ -47,8 +47,8 @@ namespace AirTableWebApi.Services.AirTableSync
                     ProjectPrefix = ProjectPrefix,
                     MainDatabaseID = project.MainDatabaseID,
                     BackupPath = "Backup",
-                    TableListMain = mainList,
-                    TableListTeam = teamList 
+                    TableListCentral = mainList,
+                    TableListLocal = teamList 
                 };
                 using (Synchronizer sync = new Synchronizer(settings))
                 {

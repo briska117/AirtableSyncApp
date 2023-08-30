@@ -93,7 +93,7 @@ namespace Navmii.AirtableSync
 
             DateTime start = DateTime.UtcNow;
             // Read data from all the tables in the central DB
-            dataMain = DbTools.ReadAllData(mainBase, GetTableListMain(mode));
+            dataMain = DbTools.ReadAllData(mainBase, settings.TableListCentral);
             Logger.Write("Cached Central Database data in {0:#,##0} sec", (DateTime.UtcNow - start).TotalSeconds);
 
             // Write all tables data into backup ZIP archive 
@@ -124,7 +124,7 @@ namespace Navmii.AirtableSync
             //}
 
             // Read current last modification time for each table in the central DB
-            modifiedMain = ReadModified(mainBase, GetTableListMain(mode));
+            modifiedMain = ReadModified(mainBase, settings.TableListCentral);
 
             // Save current last modification time for each table in the central DB
             WriteModifiedTimes(settings.MainDatabaseID, modifiedMain);
@@ -484,7 +484,7 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
             {
                 DateTime start = DateTime.UtcNow;
                 // Read data from all the tables in local DB
-                dataTeam = DbTools.ReadAllData(teamBase, GetTableListTeam(mode));
+                dataTeam = DbTools.ReadAllData(teamBase, settings.TableListLocal);
                 Logger.Write("Cached data in {0:#,##0} sec", (DateTime.UtcNow - start).TotalSeconds);
 
                 // Write all tables data into backup ZIP archive 
@@ -795,7 +795,7 @@ SYNCHRONIZATION START", teamName, teamDatabaseID);
                 dataTeam.Clear();
 
                 // Read current last modification time for each table in local DB
-                modifiedTeam = ReadModified(teamBase, GetTableListTeam(mode));
+                modifiedTeam = ReadModified(teamBase, settings.TableListLocal);
 
                 // Save current last modification time for each table in local DB
                 WriteModifiedTimes(teamDatabaseID, modifiedTeam);

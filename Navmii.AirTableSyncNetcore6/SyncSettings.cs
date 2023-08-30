@@ -27,8 +27,8 @@ namespace Navmii.AirTableSyncNetcore6
 
         public string CollectionModeId { get; set; }
 
-        public string[] TableListMain { get; set; }
-        public string[] TableListTeam { get; set; }
+        public string[] TableListCentral { get; set; }
+        public string[] TableListLocal { get; set; }
 
         public List<RelatedTable> RelatedTables { get; set; }
     }

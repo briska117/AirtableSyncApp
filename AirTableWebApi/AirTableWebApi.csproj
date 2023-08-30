@@ -31,6 +31,7 @@
     <ProjectReference Include="..\AirTableDatabase\AirTableDatabase.csproj" />
     <ProjectReference Include="..\AirTableIdentity\AirTableIdentity.csproj" />
     <ProjectReference Include="..\Navmii.AirTableSyncNetcore6\Navmii.AirTableSyncNetcore6.csproj" />
+    <ProjectReference Include="..\Navmii.Request\Navmii.Request.csproj" />
   </ItemGroup>
 
 </Project>
