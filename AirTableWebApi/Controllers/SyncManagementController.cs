@@ -36,7 +36,7 @@ namespace AirTableWebApi.Controllers
         {
             try
             {
-                var project = this.projectsService.GetProject(projectId);
+                var project =await this.projectsService.GetProject(projectId);
                 if (project == null)
                 {
                     return NotFound();
