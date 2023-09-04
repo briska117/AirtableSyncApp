@@ -1,5 +1,6 @@
 ﻿using AirTableDatabase;
 using AirTableDatabase.DBModels;
+using Microsoft.EntityFrameworkCore;
 
 namespace AirTableWebApi.Repositories.ClientPrefixes
 {
@@ -15,15 +16,24 @@ namespace AirTableWebApi.Repositories.ClientPrefixes
         {
             try
             {
+
+
+                ClientPrefix checkClientPrefix = this.applicationDB.ClientPrefixes.FirstOrDefault(c => c.Name.Trim().ToLower() == clientPrefix.Name.Trim().ToLower());
+
+                if (checkClientPrefix != null)
+                {
+                    throw new ArgumentException("Client Prefix Already exist");
+                }
+
                 clientPrefix.ClientPrefixId = Guid.NewGuid().ToString();
                 await this.applicationDB.ClientPrefixes.AddAsync(clientPrefix);
                 await this.applicationDB.SaveChangesAsync();
-                return clientPrefix;    
+                return clientPrefix;
+
             }
             catch (Exception ex)
             {
-
-                throw new Exception($"Error in Add Client Prefix : {ex.Message}");
+                throw new ArgumentException($"Error in Add Client Prefix : {ex.Message}");
             }
         }
 
@@ -40,6 +50,21 @@ namespace AirTableWebApi.Repositories.ClientPrefixes
                 throw new Exception($"Error in get Client Prefix with Id {id} : {ex.Message}");
             }
         }
+
+        public async Task<ClientPrefix> GetClientPrefixByName(string clientPrefixName)
+        {
+            try
+            {
+                ClientPrefix clientPrefix = this.applicationDB.ClientPrefixes.FirstOrDefault(cp => cp.Name == clientPrefixName);
+                return clientPrefix;
+            }
+            catch (Exception ex)
+            {
+
+                throw new Exception($"Error in get Client Prefix with Id {clientPrefixName} : {ex.Message}");
+            }
+        }
+
 
         public async Task<List<ClientPrefix>> GetClientPrefixes()
         {
@@ -67,7 +92,7 @@ namespace AirTableWebApi.Repositories.ClientPrefixes
             catch (Exception ex)
             {
 
-                throw new Exception($"Error in remove Client Prefix with Id {id} : {ex.Message}");
+                throw new ArgumentException($"Error in remove Client Prefix with Id {id} : {ex.Message}");
             }
         }
 

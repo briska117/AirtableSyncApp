@@ -1,5 +1,6 @@
 ﻿using AirTableDatabase;
 using AirTableDatabase.DBModels;
+using System;
 
 namespace AirTableWebApi.Repositories.CountryPrefixes
 {
@@ -26,6 +27,14 @@ namespace AirTableWebApi.Repositories.CountryPrefixes
         {
             try
             {
+
+                CountryPrefix existingCountryPrefix = this.applicationDB.CountryPrefixes.FirstOrDefault(c => c.Name.Trim().ToLower() == countryPrefix.Name.Trim().ToLower());
+
+                if (existingCountryPrefix != null)
+                {
+                    throw new ArgumentException("Client Prefix Already exist");
+                }
+
                 countryPrefix.CountryPrefixId = Guid.NewGuid().ToString();
                 await this.applicationDB.CountryPrefixes.AddAsync(countryPrefix);
                 await this.applicationDB.SaveChangesAsync();

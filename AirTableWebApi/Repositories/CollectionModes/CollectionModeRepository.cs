@@ -16,6 +16,13 @@ namespace AirTableWebApi.Repositories.CollectionModes
         {
             try
             {
+                CollectionMode existingCollectionMode = this.applicationDB.CollectionModes.FirstOrDefault(c => c.Name.Trim().ToLower() == collectionMode.Name.Trim().ToLower());
+
+                if (existingCollectionMode != null)
+                {
+                    throw new ArgumentException("Client Prefix Already exist");
+                }
+
                 collectionMode.CollectionModeId = Guid.NewGuid().ToString();
                 this.applicationDB.CollectionModes.Add(collectionMode);
                 this.applicationDB.SaveChanges(); 
