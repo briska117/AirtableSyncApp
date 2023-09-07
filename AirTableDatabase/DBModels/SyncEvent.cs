@@ -21,5 +21,8 @@ namespace AirTableDatabase.DBModels
 
         [Required]
         public DateTime SyncTime { get; set; }
+
+        public bool IsAtomatic { get; set; }
+            
     }
 }

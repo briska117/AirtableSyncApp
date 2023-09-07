@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Navmii.AirTableSyncNetcore6
 {
-    internal static class SyncTablesConfig
+    public static class SyncTablesConfig
     {
         public const string SyncIds = "Sync IDs";
         public const string MiscSpendDetail = "Misc. Spend Detail";

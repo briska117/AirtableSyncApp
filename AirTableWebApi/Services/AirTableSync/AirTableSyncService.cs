@@ -7,6 +7,9 @@ using System.Text;
 using AirTableWebApi.Services.CollectionModes;
 using AirTableWebApi.Services.RelatedTables;
 using AirTableWebApi.Services.AirTableFields;
+using AirTableWebApi.Services.AirTableApi;
+using Navmii.AirTableSyncNetcore6.AirtablesModels;
+using System.Linq;
 
 namespace AirTableWebApi.Services.AirTableSync
 {
@@ -17,21 +20,24 @@ namespace AirTableWebApi.Services.AirTableSync
         private readonly ICollectionModeService collectionMode;
         private readonly IRelatedTablesService relatedTablesService;
         private readonly IAirTableFieldsService airTableFields;
+        private readonly IAirTableApiService airTableApiService;
 
         public AirTableSyncService(IProjectsService projectsService, 
             ISyncEventsService eventsService, 
             ICollectionModeService collectionMode,
             IRelatedTablesService relatedTablesService,
-            IAirTableFieldsService airTableFields)
+            IAirTableFieldsService airTableFields,
+            IAirTableApiService airTableApiService)
         {
             this.projectsService = projectsService;
             this.eventsService = eventsService;
             this.collectionMode = collectionMode;
             this.relatedTablesService = relatedTablesService;
             this.airTableFields = airTableFields;
+            this.airTableApiService = airTableApiService;
         }
 
-        private async Task StartAirtableSyncProcces(Project project, string syncEventId, string[] mainList, string[] teamList, List<RelatedTable> tables)
+        private async Task StartAirtableSyncProcces(Project project, string syncEventId, string[] mainList, string[] teamList)
         {
 
             var history = await this.eventsService.GetSyncEventHistory(syncEventId);
@@ -48,41 +54,43 @@ namespace AirTableWebApi.Services.AirTableSync
                     MainDatabaseID = project.MainDatabaseID,
                     BackupPath = "Backup",
                     TableListCentral = mainList,
-                    TableListLocal = teamList 
+                    TableListLocal = teamList
                 };
                 using (Synchronizer sync = new Synchronizer(settings))
                 {
                     StringBuilder logtread = new StringBuilder();
 
-                    history.Comment = $"Airtable Sync InProccess {DateTime.UtcNow}";
+                    history.Comment = $"Airtable Sync Data Base {settings.MainDatabaseID} InProccess {DateTime.UtcNow}";
                     history.StatusSync = StatusSync.InProccess;
                     await this.eventsService.AddSyncEventHistory(history);
                     if (sync.Execute())
                     {
-                        history.Comment = Logger.ReadLogFile();
-                        history.StatusSync = StatusSync.Finish;
+                        history.Comment = $"Complete Sync Data Base {settings.MainDatabaseID} {DateTime.UtcNow}";
+
+                        history.StatusSync = StatusSync.Complete;
 
                         await this.eventsService.AddSyncEventHistory(history);
 
                     }
                     else
                     {
-                        history.Comment = Logger.ReadLogFile();
+                        history.Comment = $"Error Sync Data Base {settings.MainDatabaseID} {DateTime.UtcNow}";
                         history.StatusSync = StatusSync.Error;
                         await this.eventsService.AddSyncEventHistory(history);
                     }
 
-                    await Task.Delay(1000);
-                    history.Comment = $"Automatic Sync Complete {DateTime.Now}"; ;
-                    history.StatusSync = StatusSync.Finish;
-                    await this.eventsService.AddSyncEventHistory(history);
+
                 }
             }
             catch (Exception ex)
             {
-                history.Comment = Logger.ReadLogFile(); 
-                history.Comment=history.Comment+ $"\n{ex.Message}\n {ex.InnerException}";
+                history.Comment = $"{ex.InnerException}";
                 history.StatusSync = StatusSync.Error;
+                await this.eventsService.AddSyncEventHistory(history);
+            } finally{
+                await Task.Delay(1000);
+                history.Comment = Logger.ReadLogFile();
+                history.StatusSync = StatusSync.Finish;
                 await this.eventsService.AddSyncEventHistory(history);
             }
         }
@@ -94,7 +102,8 @@ namespace AirTableWebApi.Services.AirTableSync
             {
                 ProjectId = projectId,
                 EventName = $"Sync project Manual {dateManualSync.ToShortDateString()}",
-                SyncTime = dateManualSync
+                SyncTime = dateManualSync,
+                IsAtomatic = false
             };
 
             await this.eventsService.AddAsyncEvent(syncEvent);
@@ -108,15 +117,18 @@ namespace AirTableWebApi.Services.AirTableSync
             };
             await this.eventsService.AddSyncEventHistory(history);
             Project project = await this.projectsService.GetProjectExtend(projectId);
-            List<CollectionModeRelatedTable> collectionModeRelatedTables = await this.collectionMode.GetCollectionModeRelatedTable(project.Mode);
-            List<string> relatdTablesIds = collectionModeRelatedTables.Select(c=>c.RelatedTableId).ToList();    
-            List<RelatedTable> relatedTables = await this.relatedTablesService.GetRelatedTables();
-            relatedTables = relatedTables.Where(r=> relatdTablesIds.Contains(r.RelatedTableId)).ToList();
-            string[] main = relatedTables.Where(c => c.MainList).Select(c => c.Name).ToArray();
-            string[] team = relatedTables.Where(c => c.TeamList).Select(c => c.Name).ToArray();
+            AirTableApiSettings airTableApiSettings = new AirTableApiSettings { DataBaseId = project.MainDatabaseID, AccessToken = project.ApiKey };
+            var airtableInfo = await this.airTableApiService.GetProjectDatabaseSchema(airTableApiSettings);
+            string[] main = airtableInfo.CentralTables.Select(c => c.Name).ToArray();
+            var firstTeam = airtableInfo.Teams.FirstOrDefault();
+            string[] team = firstTeam.TeamTables.Select(c => c.Name).ToArray();
+            var mainFilter = SyncTablesConfig.RigsModeMain;
+            var teamFilter = SyncTablesConfig.RigsModeTeam;
+            main = main.Where(t => mainFilter.Contains(t)).ToArray();
+            team = team.Where(t => teamFilter.Contains(t)).ToArray();
 
 
-            this.StartAirtableSyncProcces(project,history.SyncEventHistoryId,main,team,relatedTables);
+            this.StartAirtableSyncProcces(project,history.SyncEventHistoryId,main,team);
             return syncEvent;
         }
 
@@ -133,17 +145,21 @@ namespace AirTableWebApi.Services.AirTableSync
                 Comment = "Start Automatic Airtable sync",
                 StatusSync = StatusSync.Start,
                 StartSync = dateManualSync
+
             };
             await this.eventsService.AddSyncEventHistory(history);
             Project project = await this.projectsService.GetProjectExtend(projectId);
-            List<CollectionModeRelatedTable> collectionModeRelatedTables = await this.collectionMode.GetCollectionModeRelatedTable(project.Mode);
-            List<string> relatdTablesIds = collectionModeRelatedTables.Select(c => c.RelatedTableId).ToList();
-            List<RelatedTable> relatedTables = await this.relatedTablesService.GetRelatedTables();
-            relatedTables = relatedTables.Where(r => relatdTablesIds.Contains(r.RelatedTableId)).ToList();
-            string[] main = relatedTables.Where(c => c.MainList).Select(c => c.Name).ToArray();
-            string[] team = relatedTables.Where(c => c.TeamList).Select(c => c.Name).ToArray();
+            AirTableApiSettings airTableApiSettings = new AirTableApiSettings { DataBaseId = project.MainDatabaseID, AccessToken = project.ApiKey };
+            var airtableInfo = await this.airTableApiService.GetProjectDatabaseSchema(airTableApiSettings);
+            string[] main = airtableInfo.CentralTables.Select(c => c.Name).ToArray();
+            var firstTeam = airtableInfo.Teams.FirstOrDefault();
+            string[] team = firstTeam.TeamTables.Select(c => c.Name).ToArray();
+            var mainFilter = SyncTablesConfig.RigsModeMain;
+            var teamFilter = SyncTablesConfig.RigsModeTeam;
+            main = main.Where(t => mainFilter.Contains(t)).ToArray();
+            team = team.Where(t => teamFilter.Contains(t)).ToArray();
 
-            this.StartAirtableSyncProcces(project, history.SyncEventHistoryId, main, team,relatedTables);
+            this.StartAirtableSyncProcces(project, history.SyncEventHistoryId, main, team);
             return syncEvent;
         }
    
