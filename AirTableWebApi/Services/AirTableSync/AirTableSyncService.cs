@@ -54,41 +54,43 @@ namespace AirTableWebApi.Services.AirTableSync
                     MainDatabaseID = project.MainDatabaseID,
                     BackupPath = "Backup",
                     TableListCentral = mainList,
-                    TableListLocal = teamList 
+                    TableListLocal = teamList
                 };
                 using (Synchronizer sync = new Synchronizer(settings))
                 {
                     StringBuilder logtread = new StringBuilder();
 
-                    history.Comment = $"Airtable Sync InProccess {DateTime.UtcNow}";
+                    history.Comment = $"Airtable Sync Data Base {settings.MainDatabaseID} InProccess {DateTime.UtcNow}";
                     history.StatusSync = StatusSync.InProccess;
                     await this.eventsService.AddSyncEventHistory(history);
                     if (sync.Execute())
                     {
-                        history.Comment = Logger.ReadLogFile();
-                        history.StatusSync = StatusSync.Finish;
+                        history.Comment = $"Complete Sync Data Base {settings.MainDatabaseID} {DateTime.UtcNow}";
+
+                        history.StatusSync = StatusSync.Complete;
 
                         await this.eventsService.AddSyncEventHistory(history);
 
                     }
                     else
                     {
-                        history.Comment = Logger.ReadLogFile();
+                        history.Comment = $"Error Sync Data Base {settings.MainDatabaseID} {DateTime.UtcNow}";
                         history.StatusSync = StatusSync.Error;
                         await this.eventsService.AddSyncEventHistory(history);
                     }
 
-                    await Task.Delay(1000);
-                    history.Comment = $"Automatic Sync Complete {DateTime.Now}"; ;
-                    history.StatusSync = StatusSync.Finish;
-                    await this.eventsService.AddSyncEventHistory(history);
+
                 }
             }
             catch (Exception ex)
             {
-                history.Comment = Logger.ReadLogFile(); 
-                history.Comment=history.Comment+ $"\n{ex.Message}\n {ex.InnerException}";
+                history.Comment = $"{ex.InnerException}";
                 history.StatusSync = StatusSync.Error;
+                await this.eventsService.AddSyncEventHistory(history);
+            } finally{
+                await Task.Delay(1000);
+                history.Comment = Logger.ReadLogFile();
+                history.StatusSync = StatusSync.Finish;
                 await this.eventsService.AddSyncEventHistory(history);
             }
         }
@@ -100,7 +102,8 @@ namespace AirTableWebApi.Services.AirTableSync
             {
                 ProjectId = projectId,
                 EventName = $"Sync project Manual {dateManualSync.ToShortDateString()}",
-                SyncTime = dateManualSync
+                SyncTime = dateManualSync,
+                IsAtomatic = false
             };
 
             await this.eventsService.AddAsyncEvent(syncEvent);
@@ -142,6 +145,7 @@ namespace AirTableWebApi.Services.AirTableSync
                 Comment = "Start Automatic Airtable sync",
                 StatusSync = StatusSync.Start,
                 StartSync = dateManualSync
+
             };
             await this.eventsService.AddSyncEventHistory(history);
             Project project = await this.projectsService.GetProjectExtend(projectId);

@@ -30,6 +30,7 @@ namespace AirTableDatabase.DBModels
     public enum StatusSync
     {
         Start,
+        Complete,
         Finish,
         InProccess,
         Error,
