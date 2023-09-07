@@ -51,13 +51,16 @@ namespace AirTableWebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            if (await this.accountManager.UserExistByEmail(account.Email)) {
-                return Conflict($"User {account.Email} already exist!");
+            try
+            {
+                var createUser = await this.accountManager.CreateUser(account);
+                return Ok(createUser);
             }
+            catch (Exception ex)
+            {
 
-            var createUser = await this.accountManager.CreateUser(account);
-
-            return Ok(createUser);
+                return BadRequest(ex.Message);
+            }
         }
 
 

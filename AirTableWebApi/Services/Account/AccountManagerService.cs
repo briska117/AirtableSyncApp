@@ -2,6 +2,7 @@
 using AirTableIdentity;
 using AirTableIdentity.Models;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Principal;
 using System.Text;
 
 namespace AirTableWebApi.Services.Account
@@ -19,6 +20,13 @@ namespace AirTableWebApi.Services.Account
 
         public async Task<IdentityUserDTO> CreateUser(AccountForm accountForm)
         {
+
+            if (await UserExistByEmail(accountForm.Email))
+            {
+                throw new ArgumentException("User Already exist");
+            }
+
+
             IdentityUser user = new IdentityUser
             {
                 Email = accountForm.Email,
