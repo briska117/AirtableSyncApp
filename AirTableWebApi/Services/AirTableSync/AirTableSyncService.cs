@@ -159,9 +159,21 @@ namespace AirTableWebApi.Services.AirTableSync
             main = main.Where(t => mainFilter.Contains(t)).ToArray();
             team = team.Where(t => teamFilter.Contains(t)).ToArray();
 
-            this.StartAirtableSyncProcces(project, history.SyncEventHistoryId, main, team);
+            await this.StartAirtableSyncProcces(project, history.SyncEventHistoryId, main, team);
             return syncEvent;
         }
-   
+
+        public async Task ActivateQueueSync(List<AutomaticSyncProject> syncProjects)
+        {
+            try {
+
+                foreach (var syncProject in syncProjects)
+                {
+                    var applySync = await this.AutomaticAirtableSync(syncProject.ProjectId, syncProject.EventId);
+                    
+                }
+            }
+            catch (Exception ex) { }
+        }
     }
 }

@@ -6,5 +6,7 @@ namespace AirTableWebApi.Services.AirTableSync
     {
         public Task<SyncEvent> ManualAirtableSync(string projectId);
         public Task<SyncEvent> AutomaticAirtableSync(string projectId, string eventId);
+        public Task ActivateQueueSync(List<AutomaticSyncProject> syncProjects);
+        
     }
 }

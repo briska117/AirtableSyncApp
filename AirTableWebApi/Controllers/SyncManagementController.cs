@@ -185,17 +185,15 @@ namespace AirTableWebApi.Controllers
                 {
                     return BadRequest();  
                 }
-                foreach (var syncProject in syncProjects)
-                {
-                    var applySync= await this.syncService.AutomaticAirtableSync(syncProject.ProjectId,syncProject.EventId);
-                    syncEvents.Add(applySync);  
-                }
-                return Ok(new { Success = true, Message = $"Sync start now  {DateTime.UtcNow}", events = syncProjects });
+
+                syncService.ActivateQueueSync(syncProjects);
+               
+                return Ok(new { Success = true, Message = $"Sync start {syncProjects.Count} projects , now  {DateTime.UtcNow}"});
             }
-            catch (Exception)
+            catch (Exception ex)
             {
 
-                throw;
+                throw ;
             }
         }
 
